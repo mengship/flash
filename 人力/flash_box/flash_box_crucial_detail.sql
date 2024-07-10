@@ -422,15 +422,3 @@ FROM (
          ) last_question
                             ON p_crutial_detail_v2.problem_no = last_question.problem_no -- WHERE p_crutial_detail_v2.problem_no = 'PNO9291320240110120932133813'
      ) t0;
-
-
-select *
-from dwm.dwd_th_flashbox_problem_detail
-where problem_no =
-      'PNO6284920231015122439331116';
-
-select *
-from dwm.dwd_th_flashbox_problem_crucial_detail
-where problem_no =
-      'PNO2254320230315151034202031';
-
