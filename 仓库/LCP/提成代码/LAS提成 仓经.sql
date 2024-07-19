@@ -88,7 +88,7 @@ and
 convert_tz(date_sub(date_sub(date_format(now(),'%y-%m-%d'),interval extract(day from now())-1 day),interval 0 month),'+07:00', '+07:00') #@TODO 需要改时间
 ),
 outbound as
-(
+( -- 出库 与 打包
 SELECT
         SUM(打包单量) 打包单量
         ,SUM(出库单量) 出库单量
@@ -135,9 +135,9 @@ FROM
         SELECT
                 货主
                 ,CASE 货主 when 'TCL' THEN 单量*6
-                                  when 'Intrepid - Tefal' then 单量*1.5
-                                  else 单量
-                          end 销退单量
+                        when 'Intrepid - Tefal' then 单量*1.5
+                        else 单量
+                        end 销退单量
         FROM
                 (
                 SELECT
@@ -197,7 +197,7 @@ FROM
             (
                 SELECT
                     fb.`fine_sn` 罚款编号,
-case
+                    case
                         fb.`status`
                         when 0 then '初始化'
                         when 1 then '创建'
@@ -213,14 +213,14 @@ case
                     fb.`biz_date` 业务发生日期,
                     fb.`amount` * 0.01 预罚款金额,
                     fb.`reason` 罚款原因,
-case
+                    case
                         fb.`adjust_type`
                         when 0 then '增加'
                         when 1 then '减少'
                     end 调整类型,
                     fb.`adjust_amount` 调整金额,
                     fb.`adjust_reason` 调整原因,
-(fb.`amount` + fb.`adjust_amount`) * 0.01 罚款总金额,
+                    (fb.`amount` + fb.`adjust_amount`) * 0.01 罚款总金额,
                     fb.`creator_name` 创建人,
                     left(date_add(fb.`created`, interval -60 minute), 7) 月份,
                     date_add(fb.`created`, interval -60 minute) 创建时间,
@@ -254,8 +254,8 @@ SELECT
         ,人数
         ,提成系数
         ,超额提成
-        ,22000 小时工扣减 -- @todo
-        ,SUM(超额提成/人数) over (PARTITION by 1)-22000 总提成 -- @todo
+        ,0 小时工扣减 -- @todo
+        ,SUM(超额提成/人数) over (PARTITION by 1)-0 总提成 -- @todo
         ,应出勤
         ,出勤
         ,迟到
@@ -268,20 +268,20 @@ SELECT
         ,婚假
         ,公司培训假
         ,出勤/应出勤 考勤系数
-        , ((SUM(超额提成/人数) over (PARTITION by 1))-22000)/(sum(1) over(partition by 1)) 工作量提成 # 工作量提成=总提成/总人数 @todo
+        , ((SUM(超额提成/人数) over (PARTITION by 1))-0)/(sum(1) over(partition by 1)) 工作量提成 # 工作量提成=总提成/总人数 @todo
+        ,((SUM(超额提成/人数) over (PARTITION by 1))-0)
+        ,(sum(1) over(partition by 1))
         ,coalesce(fine.业务罚款, 0) 业务罚款
         ,coalesce(fine.现场管理罚款, 0) 现场管理罚款
         ,coalesce(fine.考勤罚款, 0) 考勤罚款
         -- @todo
-        ,((SUM(超额提成/人数) over (PARTITION by 1)-22000)/(sum(1) over(partition by 1))) * (出勤/应出勤) - (coalesce(fine.业务罚款,0) + coalesce(fine.现场管理罚款,0) + coalesce(fine.考勤罚款,0) ) 基础提成 # 基础提成=工作量提成*考勤系数-考勤罚款
+        ,((SUM(超额提成/人数) over (PARTITION by 1)-0)/(sum(1) over(partition by 1))) * (出勤/应出勤) - (coalesce(fine.业务罚款,0) + coalesce(fine.现场管理罚款,0) + coalesce(fine.考勤罚款,0) ) 基础提成 # 基础提成=工作量提成*考勤系数-考勤罚款
         ,kpi系数 kpi系数
         ,if(出勤/应出勤=1 and 是否本月入职='非本月入职',800,0) 全勤奖
         -- @todo
-        ,(((SUM(超额提成/人数) over (PARTITION by 1)-22000)/(sum(1) over(partition by 1))) * (出勤/应出勤) - (coalesce(fine.业务罚款,0) + coalesce(fine.现场管理罚款,0) + coalesce(fine.考勤罚款,0) ) ) * kpi系数  提成 # 提成=基础提成*KPI 系数
+        ,(((SUM(超额提成/人数) over (PARTITION by 1)-0)/(sum(1) over(partition by 1))) * (出勤/应出勤) - (coalesce(fine.业务罚款,0) + coalesce(fine.现场管理罚款,0) + coalesce(fine.考勤罚款,0) ) ) * kpi系数  提成 # 提成=基础提成*KPI 系数
         -- @todo
-        ,if(cast(kpi系数 as decimal )>0,((((SUM(超额提成/人数) over (PARTITION by 1)-22000)/(sum(1) over(partition by 1))) * (出勤/应出勤) - (coalesce(fine.业务罚款,0) + coalesce(fine.现场管理罚款,0) + coalesce(fine.考勤罚款,0) ) ) * kpi系数) + if(出勤/应出勤=1 and 是否本月入职='非本月入职',800,0),0 ) 应发提成 # 提成=基础提成*KPI 系数
-#         ,if(cast(kpi系数 as DECIMAL)>0,1,0)
-#         ,if(出勤/应出勤=1 and 是否本月入职='非本月入职',800,0)
+        ,if(cast(kpi系数 as decimal(38,2) )>0,((((SUM(超额提成/人数) over (PARTITION by 1)-0)/(sum(1) over(partition by 1))) * (出勤/应出勤) - (coalesce(fine.业务罚款,0) + coalesce(fine.现场管理罚款,0) + coalesce(fine.考勤罚款,0) ) ) * kpi系数) + if(出勤/应出勤=1 and 是否本月入职='非本月入职',800,0),0 ) 应发提成 # 提成=基础提成*KPI 系数
 FROM
         (-- 超额提成
         SELECT
@@ -320,8 +320,8 @@ FROM
                         ,t.职位类别
                         ,t.工作仓库
                         ,菜鸟入库*1.2 菜鸟入库量
-                        ,菜鸟出库*1.2 菜鸟打包量
-                        ,菜鸟出库*1.2 菜鸟出库量
+                        ,t.菜鸟出库*1.2 菜鸟打包量
+                        ,t.菜鸟出库*1.2 菜鸟出库量
                         ,菜鸟销退*1.2 菜鸟销退
                         ,kpi系数
                         ,IF(LEFT(hsi.hire_date,7)=left(date_sub(date_add(now(),interval -60 minute),interval 1 month),7),'本月入职','非本月入职') 是否本月入职 # @todo
@@ -336,23 +336,23 @@ FROM
                                 when t.工作仓库='物料仓' and t.职位类别='Inbound' then 物料仓入库量
                                 else 0
                         END 入库工作量
-                        ,CASE when t.工作仓库='电商仓' and t.职位类别='Pickpacking'   then (菜鸟出库*1.2+打包单量)
+                        ,CASE when t.工作仓库='电商仓' and t.职位类别='Pickpacking'   then (t.菜鸟出库*1.2+打包单量)
                                 when t.工作仓库='物料仓' and t.职位类别='Pickpacking' then 物料仓打包量
                                 else 0
                         END 打包工作量
-                        ,CASE when t.工作仓库='电商仓' and t.职位类别='Outbound' then 菜鸟出库*1.2+出库单量
+                        ,CASE when t.工作仓库='电商仓' and t.职位类别='Outbound' then t.菜鸟出库*1.2+出库单量
                                 when t.工作仓库='物料仓'  and t.职位类别='Outbound' then 物料仓出库量
                                 else 0
                         END 出库工作量
                         ,CASE WHEN t.工作仓库='销退' THEN 销退单量+菜鸟销退*1.2
                                 ELSE 0
                         END 销退工作量
-                        ,人数
+                        ,c.人数
                         ,提成系数
                         ,目标值
-                        ,CASE when t.工作仓库='电商仓' then 目标值*26*人数
-                                when t.工作仓库='物料仓' then 目标值*人数
-                                when t.工作仓库='销退' then 目标值*26*人数
+                        ,CASE when t.工作仓库='电商仓' then 目标值*26*c.人数
+                                when t.工作仓库='物料仓' then 目标值*c.人数
+                                when t.工作仓库='销退' then 目标值*26*c.人数
                                 else 0
                         end 超额提成目标值
                 FROM tmpale.tmp_th_ffm_las_stat t
@@ -418,35 +418,33 @@ FROM
                                 ,职位类别
                         )c on t.工作仓库=c.工作仓库 and t.职位类别=c.职位类别
                 LEFT JOIN tmpale.tmp_th_las_rule d on t.工作仓库=d.工作仓库 and t.职位类别=d.职位类别
+                where t.员工id is not null and length(t.员工id)>0
                 ) t0
         )a
 left JOIN
         (
         SELECT
-      left(统计日期,7) 月份
---       ,仓库 物理仓
-      ,人员信息
---       ,职位类别
-      ,sum(应出勤) 应出勤
-      ,sum(出勤) 出勤
-      ,sum(迟到) 迟到
-      -- ,sum(请假) 请假
-      ,sum(旷工) 旷工
-      ,sum(年假) 年假
-      ,sum(事假) 事假
-      ,sum(病假) 病假
-      ,sum(产假) 产假
-      ,sum(丧假) 丧假
-      ,sum(婚假) 婚假
-      ,sum(公司培训假) 公司培训假
-      FROM
-      (
-      SELECT
-              *
-      FROM `dwm`.`dwd_th_ffm_attendance_detail1` d
-      join tmpale.tmp_th_ffm_las_stat t on d.人员信息=t.员工id
-      ) ad
-      GROUP BY  left(统计日期,7)
-      ,人员信息
+                left(统计日期,7) 月份
+                ,人员信息
+                ,sum(应出勤) 应出勤
+                ,sum(出勤) 出勤
+                ,sum(迟到) 迟到
+                ,sum(旷工) 旷工
+                ,sum(年假) 年假
+                ,sum(事假) 事假
+                ,sum(病假) 病假
+                ,sum(产假) 产假
+                ,sum(丧假) 丧假
+                ,sum(婚假) 婚假
+                ,sum(公司培训假) 公司培训假
+        FROM
+                (
+                SELECT
+                        *
+                FROM `dwm`.`dwd_th_ffm_attendance_detail1` d
+                join tmpale.tmp_th_ffm_las_stat t on d.人员信息=t.员工id
+                ) ad
+                GROUP BY  left(统计日期,7)
+                ,人员信息
         )b on a.员工id=b.人员信息
 left join fine on a.员工id=fine.工号;
