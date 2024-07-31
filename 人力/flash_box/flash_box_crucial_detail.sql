@@ -6,7 +6,6 @@
  编写人员: tiance
  设计日期：2023/12/08
  修改日期: 2024/01/31
- 修改人员:
  修改原因:
  -----------------------------------------------------------------------
  ---存在问题：
@@ -73,7 +72,6 @@ WITH Problem_no_question_datail AS (
                                  ON p_detail.1st_question_staff_id = hsi.staff_info_id # 关联员工表，本来要剔除外协，发现不用剔除。
              WHERE 1 = 1
                AND row_type IN ('transfer', 'reply') # 剔除提问，保留回复和转移
-               AND problem_no = 'PNO7837420231110165559157551'
          ) t0
     ORDER BY problem_no, row_num
 ),
@@ -188,7 +186,6 @@ WITH Problem_no_question_datail AS (
                          1st_question_tstamp
                   FROM dwm.dwd_th_flashbox_problem_detail
                   WHERE row_num = 1 -- 		AND problem_no = 'PNO7767020231225103459669167'
-                    and problem_no = 'PNO7837420231110165559157551'
                   -- 		ORDER BY problem_no,tstamp
               ) question
                   LEFT JOIN (
@@ -375,6 +372,7 @@ FROM (
                          1st_question_tstamp   AS `首次提问时间`,
                          last_reply_tstamp     AS `最后回复时间` # 这里没有转移，就纯回复
                   FROM Problem_crutial_detail -- 	WHERE problem_no = 'PNO9611220231216201321832166'
+             where problem_no='PNO2254320230315151034202031'
                   -- ORDER BY problem_no,demand_tstamp
               ) p_crutial_detail_v2
                   LEFT JOIN (
@@ -410,7 +408,6 @@ FROM (
                     row_type
              FROM dwm.dwd_th_flashbox_problem_detail
              WHERE row_num_desc = 1 -- 	AND problem_no = 'PNO9611220231216201321832166'
-                      and problem_no='PNO7837420231110165559157551'
          ) p_datail_last ON p_crutial_detail_v2.problem_no = p_datail_last.problem_no
                   LEFT JOIN (
              -- 每个工单的最后一个提问时间
