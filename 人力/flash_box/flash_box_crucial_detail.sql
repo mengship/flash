@@ -6,6 +6,7 @@
  编写人员: tiance
  设计日期：2023/12/08
  修改日期: 2024/01/31
+ 修改人员:王昱棋 ceui
  修改原因:
  -----------------------------------------------------------------------
  ---存在问题：
@@ -72,6 +73,7 @@ WITH Problem_no_question_datail AS (
                                  ON p_detail.1st_question_staff_id = hsi.staff_info_id # 关联员工表，本来要剔除外协，发现不用剔除。
              WHERE 1 = 1
                AND row_type IN ('transfer', 'reply') # 剔除提问，保留回复和转移
+#                AND problem_no = 'PNO7837420231110165559157551'
          ) t0
     ORDER BY problem_no, row_num
 ),
@@ -186,6 +188,7 @@ WITH Problem_no_question_datail AS (
                          1st_question_tstamp
                   FROM dwm.dwd_th_flashbox_problem_detail
                   WHERE row_num = 1 -- 		AND problem_no = 'PNO7767020231225103459669167'
+#                     and problem_no = 'PNO7837420231110165559157551'
                   -- 		ORDER BY problem_no,tstamp
               ) question
                   LEFT JOIN (
@@ -408,6 +411,7 @@ FROM (
                     row_type
              FROM dwm.dwd_th_flashbox_problem_detail
              WHERE row_num_desc = 1 -- 	AND problem_no = 'PNO9611220231216201321832166'
+#                       and problem_no='PNO7837420231110165559157551'
          ) p_datail_last ON p_crutial_detail_v2.problem_no = p_datail_last.problem_no
                   LEFT JOIN (
              -- 每个工单的最后一个提问时间
@@ -419,3 +423,18 @@ FROM (
          ) last_question
                             ON p_crutial_detail_v2.problem_no = last_question.problem_no -- WHERE p_crutial_detail_v2.problem_no = 'PNO9291320240110120932133813'
      ) t0;
+<<<<<<< Updated upstream:人力/flash_box/flash_box_crucial_detail.sql
+=======
+
+
+select *
+from dwm.dwd_th_flashbox_problem_detail
+where problem_no =
+      'PNO6284920231015122439331116';
+
+select *
+from dwm.dwd_th_flashbox_problem_crucial_detail
+where problem_no =
+      'PNO2254320230315151034202031';
+desc dwm.dwd_th_flashbox_problem_crucial_detail;
+>>>>>>> Stashed changes:TH/flash_box/flash_box_crucial_detail.sql

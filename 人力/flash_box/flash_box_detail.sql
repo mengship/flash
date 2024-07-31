@@ -277,3 +277,7 @@ FROM
                     Problem_datail_v2 -- 		WHERE problem_no IN ('PNO7837420231110165559157551','PNO1871420231127123641572984')
             ) t0
     ) t0 -- ORDER BY problem_no,row_num
+;
+
+
+select distinct cate_name_b_after_new from dwm.dwd_th_flashbox_problem_detail
