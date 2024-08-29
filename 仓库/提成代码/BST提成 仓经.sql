@@ -144,50 +144,28 @@ from
                                                     *,
                                                     超额提成工作量 * 超额系数 / 部门人数 人均工作量提成金额,
                                                     case
-                                                        when 部门 = 'Picking'
-                                                        and 阶梯提成工作量 -40000 > 0 then 7000
-                                                        when 部门 = 'Picking'
-                                                        and 阶梯提成工作量 -35000 > 0 then 5800
-                                                        when 部门 = 'Picking'
-                                                        and 阶梯提成工作量 -32000 > 0 then 5000
-                                                        when 部门 = 'Picking'
-                                                        and 阶梯提成工作量 -28000 > 0 then 4300
-                                                        when 部门 = 'Picking'
-                                                        and 阶梯提成工作量 -25000 > 0 then 3600
-                                                        when 部门 = 'Picking'
-                                                        and 阶梯提成工作量 -22000 > 0 then 3000
-                                                        when 部门 = 'Picking'
-                                                        and 阶梯提成工作量 -19000 > 0 then 2400
-                                                        when 部门 = 'Picking'
-                                                        and 阶梯提成工作量 -16000 > 0 then 1800
-                                                        when 部门 = 'Picking'
-                                                        and 阶梯提成工作量 -13000 > 0 then 1200
-                                                        when 部门 = 'Picking'
-                                                        and 阶梯提成工作量 -10000 > 0 then 500
-                                                        when 部门 = 'Packing'
-                                                        and 阶梯提成工作量 -38000 > 0 then 13200 / 分组人数
-                                                        when 部门 = 'Packing'
-                                                        and 阶梯提成工作量 -33000 > 0 then 11100 / 分组人数
-                                                        when 部门 = 'Packing'
-                                                        and 阶梯提成工作量 -31000 > 0 then 9600 / 分组人数
-                                                        when 部门 = 'Packing'
-                                                        and 阶梯提成工作量 -29000 > 0 then 8400 / 分组人数
-                                                        when 部门 = 'Packing'
-                                                        and 阶梯提成工作量 -27000 > 0 then 7200 / 分组人数
-                                                        when 部门 = 'Packing'
-                                                        and 阶梯提成工作量 -25000 > 0 then 6120 / 分组人数
-                                                        when 部门 = 'Packing'
-                                                        and 阶梯提成工作量 -23000 > 0 then 5100 / 分组人数
-                                                        when 部门 = 'Packing'
-                                                        and 阶梯提成工作量 -21000 > 0 then 4200 / 分组人数
-                                                        when 部门 = 'Packing'
-                                                        and 阶梯提成工作量 -19000 > 0 then 3210 / 分组人数
-                                                        when 部门 = 'Packing'
-                                                        and 阶梯提成工作量 -17000 > 0 then 2310 / 分组人数
-                                                        when 部门 = 'Packing'
-                                                        and 阶梯提成工作量 -15000 > 0 then 1410 / 分组人数
-                                                        when 部门 = 'Packing'
-                                                        and 阶梯提成工作量 -13000 > 0 then 600 / 分组人数
+                                                        when 部门 = 'Picking' and 阶梯提成工作量 -40000 > 0 then 7000
+                                                        when 部门 = 'Picking' and 阶梯提成工作量 -35000 > 0 then 5800
+                                                        when 部门 = 'Picking' and 阶梯提成工作量 -32000 > 0 then 5000
+                                                        when 部门 = 'Picking' and 阶梯提成工作量 -28000 > 0 then 4300
+                                                        when 部门 = 'Picking' and 阶梯提成工作量 -25000 > 0 then 3600
+                                                        when 部门 = 'Picking' and 阶梯提成工作量 -22000 > 0 then 3000
+                                                        when 部门 = 'Picking' and 阶梯提成工作量 -19000 > 0 then 2400
+                                                        when 部门 = 'Picking' and 阶梯提成工作量 -16000 > 0 then 1800
+                                                        when 部门 = 'Picking' and 阶梯提成工作量 -13000 > 0 then 1200
+                                                        when 部门 = 'Picking' and 阶梯提成工作量 -10000 > 0 then 500
+                                                        when 部门 = 'Packing' and 阶梯提成工作量 -38000 > 0 then 13200 / 分组人数
+                                                        when 部门 = 'Packing' and 阶梯提成工作量 -33000 > 0 then 11100 / 分组人数
+                                                        when 部门 = 'Packing' and 阶梯提成工作量 -31000 > 0 then 9600 / 分组人数
+                                                        when 部门 = 'Packing' and 阶梯提成工作量 -29000 > 0 then 8400 / 分组人数
+                                                        when 部门 = 'Packing' and 阶梯提成工作量 -27000 > 0 then 7200 / 分组人数
+                                                        when 部门 = 'Packing' and 阶梯提成工作量 -25000 > 0 then 6120 / 分组人数
+                                                        when 部门 = 'Packing' and 阶梯提成工作量 -23000 > 0 then 5100 / 分组人数
+                                                        when 部门 = 'Packing' and 阶梯提成工作量 -21000 > 0 then 4200 / 分组人数
+                                                        when 部门 = 'Packing' and 阶梯提成工作量 -19000 > 0 then 3210 / 分组人数
+                                                        when 部门 = 'Packing' and 阶梯提成工作量 -17000 > 0 then 2310 / 分组人数
+                                                        when 部门 = 'Packing' and 阶梯提成工作量 -15000 > 0 then 1410 / 分组人数
+                                                        when 部门 = 'Packing' and 阶梯提成工作量 -13000 > 0 then 600 / 分组人数
                                                         else 0
                                                     end 阶梯提成金额
                                                 from

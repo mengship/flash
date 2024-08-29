@@ -1,91 +1,92 @@
 # 注意修改每月小时工扣减金额
 with inbound as
 (
-SELECT
-          SUM(商品数量2) 入库数量
-FROM
-    (
-    SELECT
-              -- 时区转换；状态
-              an.`notice_number` 订单号
-              ,s2.name 货主
-              ,an.`id` 订单ID
-              ,'入库单' 订单类型
-              ,case an.`from_order_type`
-                  when 1 then '采购入库'
-                  when 2 then '调拨入库'
-                  when 3 then '退货入库'
-                  when 4 then '其他入库'
-                  end 业务类型
-              ,an.`complete_time` 收货完成时间
-              ,mb.`job_number` 收货人ID
-              ,mb.`real_name` 收货人名称
-              ,wh.`name` 虚拟仓
-              ,case
-                  when  wh.`name`='BKK-WH-LAS2电商仓' then 'LAS'
-              end 物理仓
-              ,an.`status`  订单状态
-              ,ang.`SKU` SKU
-              ,ang.`通知数量` 通知数量
-              ,ang.`商品数量` 商品数量
-              ,CASE s2.name when 'TCL' THEN ang.`商品数量`*6
-                              when 'Intrepid - Tefal' then ang.`商品数量`*2
-                              else ang.`商品数量`
-                      end 商品数量2
-              ,ang.`修正商品数量` 修正商品数量
-    FROM `wms_production`.`arrival_notice` an
-    LEFT JOIN wms_production.seller s2 on an.seller_id=s2.id
-    LEFT JOIN `wms_production`.`member` mb on an.`complete_id`=mb.id
-    LEFT JOIN `wms_production`.`warehouse` wh on wh.`id`=an.`warehouse_id`
-    LEFT JOIN
-        (
         SELECT
-            ang.`arrival_notice_id`
-            ,count(distinct ang.`seller_goods_id`) SKU
-            ,sum(ang.`通知数量`) 通知数量
-            ,sum(ang.`goods_number`) 商品数量
-            ,sum(ang.`three_num`+ang.`two_num`+ang.`one_num`) 修正商品数量
+                SUM(商品数量2) 入库数量
         FROM
-            (
-            SELECT
-                arrival_notice_id
-                ,seller_goods_id
-                ,通知数量
-                ,goods_number
-                ,two_conversion
-                ,three_conversion
-                ,if(three_conversion>0, floor(goods_number / three_conversion), 0) three_num
-                ,case when three_conversion>0 AND two_conversion>0 then floor(goods_number % three_conversion / two_conversion)
-                    when three_conversion>0 AND two_conversion=0 then floor(goods_number / three_conversion)
-                    when three_conversion=0 AND two_conversion>0 then floor(goods_number / two_conversion)
-                    else 0
-                    end two_num
-                ,case when three_conversion>0 AND two_conversion>0 then (goods_number % three_conversion % two_conversion)
-                    when three_conversion>0 AND two_conversion=0 then (goods_number % three_conversion)
-                    when three_conversion=0 AND two_conversion>0 then (goods_number % two_conversion)
-                    else goods_number
-                    end one_num
-            FROM
-                (
+        (
                 SELECT
-                    ang.`arrival_notice_id` arrival_notice_id
-                    ,ang.`seller_goods_id` seller_goods_id
-                    ,ang.`number` 通知数量
-                    ,ang.`in_num` goods_number
-                    ,ifnull(sg.`two_conversion`, 0) two_conversion
-                    ,ifnull(sg.`three_conversion`, 0) three_conversion
-                FROM `wms_production`.`arrival_notice_goods` ang
-                LEFT JOIN `wms_production`.`seller_goods` sg ON ang.`seller_goods_id`=sg.`id`
-                ) ang
-            ) ang
-        GROUP BY ang.`arrival_notice_id`
-        ) ang on an.`id`=ang.`arrival_notice_id`
-        WHERE wh.`name`='BKK-WH-LAS2电商仓'
-    ) inbound
-WHERE 收货完成时间 BETWEEN 
-convert_tz(date_sub(date_sub(date_format(now(),'%y-%m-%d'),interval extract(day from now())-1 day),interval 1 month),'+07:00', '+07:00') 
-and 
-convert_tz(date_sub(date_sub(date_format(now(),'%y-%m-%d'),interval extract(day from now())-1 day),interval 0 month),'+07:00', '+07:00') #@TODO 需要改时间
+                        -- 时区转换；状态
+                        an.`notice_number` 订单号
+                        ,s2.name 货主
+                        ,an.`id` 订单ID
+                        ,'入库单' 订单类型
+                        ,case an.`from_order_type`
+                                when 1 then '采购入库'
+                                when 2 then '调拨入库'
+                                when 3 then '退货入库'
+                                when 4 then '其他入库'
+                                end 业务类型
+                        ,an.`complete_time` 收货完成时间
+                        ,mb.`job_number` 收货人ID
+                        ,mb.`real_name` 收货人名称
+                        ,wh.`name` 虚拟仓
+                        ,case
+                                when  wh.`name`='BKK-WH-LAS2电商仓' then 'LAS'
+                        end 物理仓
+                        ,an.`status`  订单状态
+                        ,ang.`SKU` SKU
+                        ,ang.`通知数量` 通知数量
+                        ,ang.`商品数量` 商品数量
+                        ,CASE s2.name when 'TCL' THEN ang.`商品数量`*6
+                                        when 'Intrepid - Tefal' then ang.`商品数量`*2
+                                        else ang.`商品数量`
+                                end 商品数量2
+                        ,ang.`修正商品数量` 修正商品数量
+                FROM `wms_production`.`arrival_notice` an
+                LEFT JOIN wms_production.seller s2 on an.seller_id=s2.id
+                LEFT JOIN `wms_production`.`member` mb on an.`complete_id`=mb.id
+                LEFT JOIN `wms_production`.`warehouse` wh on wh.`id`=an.`warehouse_id`
+                LEFT JOIN
+                        (
+                                SELECT
+                                ang.`arrival_notice_id`
+                                ,count(distinct ang.`seller_goods_id`) SKU
+                                ,sum(ang.`通知数量`) 通知数量
+                                ,sum(ang.`goods_number`) 商品数量
+                                ,sum(ang.`three_num`+ang.`two_num`+ang.`one_num`) 修正商品数量
+                                FROM
+                                (
+                                        SELECT
+                                                arrival_notice_id
+                                                ,seller_goods_id
+                                                ,通知数量
+                                                ,goods_number
+                                                ,two_conversion
+                                                ,three_conversion
+                                                ,if(three_conversion>0, floor(goods_number / three_conversion), 0) three_num
+                                                ,case when three_conversion>0 AND two_conversion>0 then floor(goods_number % three_conversion / two_conversion)
+                                                when three_conversion>0 AND two_conversion=0 then floor(goods_number / three_conversion)
+                                                when three_conversion=0 AND two_conversion>0 then floor(goods_number / two_conversion)
+                                                else 0
+                                                end two_num
+                                                ,case when three_conversion>0 AND two_conversion>0 then (goods_number % three_conversion % two_conversion)
+                                                when three_conversion>0 AND two_conversion=0 then (goods_number % three_conversion)
+                                                when three_conversion=0 AND two_conversion>0 then (goods_number % two_conversion)
+                                                else goods_number
+                                                end one_num
+                                        from
+                                        (
+                                                SELECT
+                                                        ang.`arrival_notice_id` arrival_notice_id
+                                                        ,ang.`seller_goods_id` seller_goods_id
+                                                        ,ang.`number` 通知数量
+                                                        ,ang.`in_num` goods_number
+                                                        ,ifnull(sg.`two_conversion`, 0) two_conversion
+                                                        ,ifnull(sg.`three_conversion`, 0) three_conversion
+                                                        FROM `wms_production`.`arrival_notice_goods` ang
+                                                        LEFT JOIN `wms_production`.`seller_goods` sg ON ang.`seller_goods_id`=sg.`id`
+                                        ) ang
+                                ) ang
+                                GROUP BY ang.`arrival_notice_id`
+                        ) ang on an.`id`=ang.`arrival_notice_id`
+                        WHERE wh.`name`='BKK-WH-LAS2电商仓'
+                        and s2.name <> 'FFM-TH'
+        ) inbound
+        WHERE 收货完成时间 BETWEEN 
+        convert_tz(date_sub(date_sub(date_format(now(),'%y-%m-%d'),interval extract(day from now())-1 day),interval 1 month),'+07:00', '+07:00') 
+        and 
+        convert_tz(date_sub(date_sub(date_format(now(),'%y-%m-%d'),interval extract(day from now())-1 day),interval 0 month),'+07:00', '+07:00') #@TODO 需要改时间
 ),
 outbound as
 ( -- 出库 与 打包
@@ -267,21 +268,19 @@ SELECT
         ,丧假
         ,婚假
         ,公司培训假
-        ,出勤/应出勤 考勤系数
+        ,round(出勤/应出勤, 2) 考勤系数
         , ((SUM(超额提成/人数) over (PARTITION by 1))-0)/(sum(1) over(partition by 1)) 工作量提成 # 工作量提成=总提成/总人数 @todo
-        ,((SUM(超额提成/人数) over (PARTITION by 1))-0)
-        ,(sum(1) over(partition by 1))
         ,coalesce(fine.业务罚款, 0) 业务罚款
         ,coalesce(fine.现场管理罚款, 0) 现场管理罚款
         ,coalesce(fine.考勤罚款, 0) 考勤罚款
         -- @todo
-        ,((SUM(超额提成/人数) over (PARTITION by 1)-0)/(sum(1) over(partition by 1))) * (出勤/应出勤) - (coalesce(fine.业务罚款,0) + coalesce(fine.现场管理罚款,0) + coalesce(fine.考勤罚款,0) ) 基础提成 # 基础提成=工作量提成*考勤系数-考勤罚款
+        ,round(((SUM(超额提成/人数) over (PARTITION by 1)-0)/(sum(1) over(partition by 1))) * (出勤/应出勤) - (coalesce(fine.业务罚款,0) + coalesce(fine.现场管理罚款,0) + coalesce(fine.考勤罚款,0) ), 2) 基础提成 # 基础提成=工作量提成*考勤系数-考勤罚款
         ,kpi系数 kpi系数
         ,if(出勤/应出勤=1 and 是否本月入职='非本月入职',800,0) 全勤奖
         -- @todo
-        ,(((SUM(超额提成/人数) over (PARTITION by 1)-0)/(sum(1) over(partition by 1))) * (出勤/应出勤) - (coalesce(fine.业务罚款,0) + coalesce(fine.现场管理罚款,0) + coalesce(fine.考勤罚款,0) ) ) * kpi系数  提成 # 提成=基础提成*KPI 系数
+        ,round((((SUM(超额提成/人数) over (PARTITION by 1)-0)/(sum(1) over(partition by 1))) * (出勤/应出勤) - (coalesce(fine.业务罚款,0) + coalesce(fine.现场管理罚款,0) + coalesce(fine.考勤罚款,0) ) ) * kpi系数, 2)  提成 # 提成=基础提成*KPI 系数
         -- @todo
-        ,if(cast(kpi系数 as decimal(38,2) )>0,((((SUM(超额提成/人数) over (PARTITION by 1)-0)/(sum(1) over(partition by 1))) * (出勤/应出勤) - (coalesce(fine.业务罚款,0) + coalesce(fine.现场管理罚款,0) + coalesce(fine.考勤罚款,0) ) ) * kpi系数) + if(出勤/应出勤=1 and 是否本月入职='非本月入职',800,0),0 ) 应发提成 # 提成=基础提成*KPI 系数
+        ,round( if(cast(kpi系数 as decimal(38,2) )>0,((((SUM(超额提成/人数) over (PARTITION by 1)-0)/(sum(1) over(partition by 1))) * (出勤/应出勤) - (coalesce(fine.业务罚款,0) + coalesce(fine.现场管理罚款,0) + coalesce(fine.考勤罚款,0) ) ) * kpi系数) + if(出勤/应出勤=1 and 是否本月入职='非本月入职',800,0),0 ), 2) 应发提成 # 提成=基础提成*KPI 系数
 FROM
         (-- 超额提成
         SELECT

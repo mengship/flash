@@ -366,13 +366,13 @@ SELECT
 (SUM(超额提成 / 人数) over (PARTITION by 1) - 0) /(sum(1) over(partition by 1)) 工作量提成 -- @todo
     -- @todo
 ,
-(
+round((
         (
             (SUM(超额提成 / 人数) over (PARTITION by 1) - 0) /(sum(1) over(partition by 1))
         ) * (出勤 / 应出勤) - (
             coalesce(fine.业务罚款, 0) + coalesce(fine.现场管理罚款, 0) + coalesce(fine.考勤罚款, 0)
         )
-    ) * kpi系数 提成 # 提成=基础提成*KPI 系数
+    ) * kpi系数, 4) 提成 # 提成=基础提成*KPI 系数
 ,
     coalesce(fine.业务罚款, 0) 业务罚款,
     coalesce(fine.现场管理罚款, 0) 现场管理罚款,
@@ -385,7 +385,7 @@ SELECT
     ) 全勤奖,
     null 奖励 -- @todo
     ,
-    if(cast(kpi系数 as decimal(38, 2)) > 0, ( ( ( (SUM(超额提成 / 人数) over (PARTITION by 1) - 0) /(sum(1) over(partition by 1)) ) * (出勤 / 应出勤) - ( coalesce(fine.业务罚款, 0) + coalesce(fine.现场管理罚款, 0) + coalesce(fine.考勤罚款, 0) ) ) * kpi系数 ) + if( 出勤 / 应出勤 = 1 and 是否本月入职 = '非本月入职', 800, 0 ), 0 ) 应发提成 # 提成=基础提成*KPI 系数
+    round(if(cast(kpi系数 as decimal(38, 2)) > 0, ( ( ( (SUM(超额提成 / 人数) over (PARTITION by 1) - 0) /(sum(1) over(partition by 1)) ) * (出勤 / 应出勤) - ( coalesce(fine.业务罚款, 0) + coalesce(fine.现场管理罚款, 0) + coalesce(fine.考勤罚款, 0) ) ) * kpi系数 ) + if( 出勤 / 应出勤 = 1 and 是否本月入职 = '非本月入职', 800, 0 ), 0 ), 4) 应发提成 # 提成=基础提成*KPI 系数
     ,
     迟到,
     旷工,

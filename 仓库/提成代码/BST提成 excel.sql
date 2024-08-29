@@ -16,18 +16,18 @@ from
             '' col5,
             /* 部门工作量, */
             /* 阶梯提成工作量, */
-            (部门工作量 + 阶梯提成工作量) / 部门人数 计提工作量,
-            提成 工作量提成,
-            提成2 提成,
+            round((部门工作量 + 阶梯提成工作量) / 部门人数, 4) 计提工作量,
+            round(提成, 4) 工作量提成,
+            round(提成2, 4) 提成,
             业务罚款,
             现场管理罚款,
             考勤罚款,
             全勤奖,
             奖励,
-            case
+            round(case
                 when 部门 = 'Supervisor' then sum(应发提成) over(partition by 月份) /(count(应发提成) over(partition by 月份) -1)
                 else 应发提成
-            end 应发提成,
+            end, 4) 应发提成,
             迟到,
             旷工,
             年假,
