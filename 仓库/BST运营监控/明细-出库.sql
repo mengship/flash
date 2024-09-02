@@ -75,7 +75,7 @@ with EF as
                 ,do.goods_num 
                 ,do.warehouse_id
                 ,do.warehouse_name
-                ,do.platform_source
+                ,if(do.is_tiktok is not null, 'Tik Tok',do.platform_source) platform_source
                 ,do.seller_name
                 ,do.seller_id
                 ,do.created_time
@@ -125,6 +125,7 @@ with EF as
                         else '正常时效单'
                         end as no_istime_type
                     ,do.express_name
+                    , wd.id is_tiktok
                 FROM `wms_production`.`delivery_order` do 
                 LEFT JOIN `wms_production`.`seller_platform_source` sps on do.`platform_source_id`=sps.`id`
                 LEFT JOIN `wms_production`.`platform_source` ps on sps.`platform_source_id`=ps.`id` 
@@ -138,10 +139,12 @@ with EF as
                     `wms_production`.operation_log 
                     where 1=1
                         and status_after='1010'
-                        and `created` >= convert_tz(date_sub(date(now() + interval -1 hour),interval 30 day), '+07:00', '+08:00')
+                        and `created` >= convert_tz(date_sub(date(now() + interval -1 hour),interval 90 day), '+07:00', '+08:00')
                 ) t0 on do.delivery_sn = t0.order_sn
+                left join wms_production.`delivery_order_mark_relation` domr on domr.delivery_order_id = do.id
+                left join (select id from wms_production.wordbook_detail where `wordbook_id` = 10 and (zh = 'TT3' or zh='TT')) wd on domr.mark_id=wd.id
                 WHERE 1=1
-                    and do.`created` >= convert_tz(date_sub(date(now() + interval -1 hour),interval 30 day), '+07:00', '+08:00')
+                    and do.`created` >= convert_tz(date_sub(date(now() + interval -1 hour),interval 90 day), '+07:00', '+08:00')
                     AND do.`status` NOT IN ('1000','1010') -- 取消单
                     AND do.`platform_status`!=9
                     AND do.prompt NOT in (1,2,3,4)-- 剔除拦截
@@ -166,34 +169,23 @@ with EF as
                     ,do.pack_time + interval -1 hour pack_time
                     ,date_add(do.`out_warehouse_time`, interval -60 minute) handover_time
                     ,date_add(do.`out_warehouse_time`, interval -60 minute) delivery_time
-                    ,if(locate('DO',do.express_sn)>0 or substring(do.express_sn,1,3)='LBX' or t0.order_sn is not null, 0, 1) is_time -- do.is_presale=1 预售单不参与时效考核 is_time
-                    ,case -- when do.is_presale=1 then '预售单'
-                        when t0.order_sn is not null then '曾缺货订单'
+                    ,if(locate('DO',do.express_sn)>0 or substring(do.express_sn,1,3)='LBX', 0, 1) is_time
+                    ,case 
                         when locate('DO',do.express_sn)>0 then 'DO快递单号'
                         when substring(do.express_sn,1,3)='LBX' then 'LBX快递单号'
                         else '正常时效单'
                         end as no_istime_type
                     ,ulc.name
+                    ,null is_tiktok
                 from  wms_production.return_warehouse do 
                 LEFT JOIN wms_production.warehouse w ON do.warehouse_id=w.id
                 LEFT JOIN `wms_production`.`seller` sl on do.`seller_id`=sl.`id`
-                left join
-                (
-                    select
-                        order_sn 
-                    from 
-                    `wms_production`.operation_log 
-                    where 1=1
-                        and status_after='1010'
-                        -- and order_sn='RW2408222327'
-                        and `created` >= convert_tz(date_sub(date(now() + interval -1 hour),interval 30 day), '+07:00', '+08:00')
-                ) t0 on do.return_warehouse_sn = t0.order_sn
                 left join wms_production.logistic_company ul on do.logistic_company_id = ul.id
                 left join wms_production.usable_logistic_company ulc on ul.usable_logistic_company_id  = ulc.id
                 WHERE 1=1
                     and prompt ='0' 
                     AND status>='1020'
-                    and do.`created` >= convert_tz(date_sub(date(now() + interval -1 hour),interval 30 day), '+07:00', '+08:00')
+                    and do.`created` >= convert_tz(date_sub(date(now() + interval -1 hour),interval 90 day), '+07:00', '+08:00')
                     and sl.name not in ('FFM-TH', 'Flash -Thailand') -- 剔除物料和资产
                 
                 UNION
@@ -223,6 +215,7 @@ with EF as
                         else '正常时效单'
                         end as no_istime_type
                     ,do.express_name
+                    ,p.obj_id is_tiktok
                 from
                     `erp_wms_prod`.`delivery_order` do
                 left join erp_wms_prod.platform_source ps on do.platform_source_id = ps.id
@@ -236,9 +229,11 @@ with EF as
                     `erp_wms_prod`.operation_log 
                     where 1=1
                         and status_after='1010'
-                        and `created` >= convert_tz(date_sub(date(now() + interval -1 hour),interval 30 day), '+07:00', '+08:00')
+                        and `created` >= convert_tz(date_sub(date(now() + interval -1 hour),interval 90 day), '+07:00', '+08:00')
                 ) t0 on do.delivery_sn = t0.order_sn
-                WHERE do.`created` >= convert_tz(date_sub(date(now() + interval -1 hour),interval 30 day), '+07:00', '+08:00')
+                left join
+                (select obj_id from erp_wms_prod.prompts where type = 1 and prompts in (13, 14) and warehouse_id = 312) p on p.obj_id = do.id
+                WHERE do.`created` >= convert_tz(date_sub(date(now() + interval -1 hour),interval 90 day), '+07:00', '+08:00')
                     AND do.`status` NOT IN ('1000','1010') -- 取消单
                     AND w.name='BPL3-LIVESTREAM'
                     and do.status <> '3030'
@@ -264,29 +259,17 @@ with EF as
                     ,do.confirm_time + interval + 7 hour    pack_time
                     ,date_add(do.confirm_time , interval + 7 hour) handover_time
                     ,date_add(do.confirm_time , interval + 7 hour) delivery_time
-                    ,if(t0.order_sn is not null, 0, 1) is_time -- do.is_presale=1 预售单不参与时效考核 is_time
-                    ,case -- when do.is_presale=1 then '预售单'
-                        when t0.order_sn is not null then '曾缺货订单'
-                        else '正常时效单'
-                        end as no_istime_type
+                    ,1 is_time
+                    ,null no_istime_type
                     ,or1.carrier
+                    ,null is_tiktok
                 from  erp_wms_prod.outbound_order do 
                 LEFT JOIN erp_wms_prod.warehouse w ON do.warehouse_id=w.id
                 left join `erp_wms_prod`.`seller` s on do.seller_id = s.id
-                left join
-                (
-                    select
-                        order_sn 
-                    from 
-                    `erp_wms_prod`.operation_log 
-                    where 1=1
-                        and status_after='1010'
-                        and `created` >= convert_tz(date_sub(date(now() + interval -1 hour),interval 30 day), '+07:00', '+08:00')
-                ) t0 on do.outbound_sn = t0.order_sn
                 left join erp_wms_prod.outbound_register or1 on do.id = or1.outbound_id
                 WHERE do.status > '0'
                     AND w.name='BPL3-LIVESTREAM'
-                    and do.`created` > convert_tz(date_sub(date(now() + interval -1 hour),interval 30 day), '+07:00', '+08:00')
+                    and do.`created` > convert_tz(date_sub(date(now() + interval -1 hour),interval 90 day), '+07:00', '+08:00')
                     and s.name not in ('FFM-TH', 'Flash -Thailand') -- 剔除物料和资产
             ) do 
             left join 

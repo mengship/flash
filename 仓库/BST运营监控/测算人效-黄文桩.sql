@@ -111,3 +111,4 @@ WHERE left(申请日期,10)>='2024-05-01'
     and 仓库 in ('AGV','BPL-Return','BPL3','BST','LAS')
 GROUP BY 1,2,3
 ORDER BY 1,2,3
+;

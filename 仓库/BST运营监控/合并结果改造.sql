@@ -424,6 +424,120 @@ left join
     and left(putaway_deadline_48h,10) BETWEEN LEFT(now()- INTERVAL 7 DAY ,10) AND LEFT(now()- INTERVAL 1 DAY ,10)
     group by 1,2,3,4
 ) t22 on t0.日期 = t22.日期 and t0.仓库 = t22.仓库
+
+-- 出库
+-- B2C 已审核单量
+left join
+(
+    SELECT 
+        LEFT(created_time,10) 日期
+        ,null paltform
+        ,warehouse_name
+        ,TYPE 单据
+        ,'已审核单量' 指标
+        ,COUNT(delivery_sn) 已审核单量
+    FROM dwm.dwd_th_ffm_outbound_dayV2
+    where  1=1
+        and LEFT(created_time,10) BETWEEN LEFT(now() - INTERVAL 7 day,10) AND LEFT(now()- INTERVAL 1 day,10)
+        AND audit_time IS NOT NULL
+        and TYPE='B2C'
+    GROUP BY 1,2,3,4
+) t23 on t0.日期 = t23.日期 and t0.仓库 = t23.仓库
+
+-- B2C 未审核单量
+left join
+(
+    SELECT 
+        LEFT(created_time,10) 日期
+        ,null paltform
+        ,warehouse_name
+        ,type 单据
+        ,'未审核单量' 指标
+        ,COUNT(delivery_sn) 未审核单量
+    FROM dwm.dwd_th_ffm_outbound_dayV2
+    where 1=1
+        and LEFT(created_time,10) BETWEEN LEFT(now() - INTERVAL 7 day,10) AND LEFT(now()- INTERVAL 1 day,10)
+        AND  audit_time IS  NULL
+        and TYPE='B2C'
+    GROUP BY 1,2,3,4
+) t24 on t0.日期 = t24.日期 and t0.仓库 = t24.仓库
+
+-- B2C 商品数量
+left join
+(
+    SELECT 
+        LEFT(if(type='B2C', delivery_time, pack_time),10) 日期
+        ,null paltform
+        ,warehouse_name
+        ,type 单据
+        ,'商品数量' 指标
+        ,sum(goods_num) 商品数量
+    FROM dwm.dwd_th_ffm_outbound_dayV2
+    where 1=1
+        and LEFT(created_time,10) BETWEEN LEFT(now() - INTERVAL 7 day,10) AND LEFT(now()- INTERVAL 1 day,10)
+        and audit_time is not null
+        and TYPE='B2C'
+    GROUP BY 1,2,3,4
+) t25 on t0.日期 = t25.日期 and t0.仓库 = t25.仓库
+
+-- B2C 出库单量
+left join
+(
+    SELECT 
+        LEFT(if(type='B2C', delivery_time, pack_time),10) 日期
+        ,null paltform
+        ,warehouse_name
+        ,type 单据
+        ,'出库单量' 指标
+        ,COUNT(delivery_sn) 出库单量
+    FROM dwm.dwd_th_ffm_outbound_dayV2
+    where 1=1
+        and LEFT(pack_time,10) BETWEEN LEFT(now() - INTERVAL 7 day,10) AND LEFT(now()- INTERVAL 1 day,10)
+        and TYPE='B2C'
+    GROUP BY 1,2,3,4
+) t26 on t0.日期 = t26.日期 and t0.仓库 = t26.仓库
+
+-- shopee B2C 及时发货
+left join
+(
+    SELECT 
+        LEFT(deadline,10) 日期
+        ,'Shopee' paltform
+        ,warehouse_name
+        ,type 单据
+        ,'及时发货' 指标
+        ,sum(及时发货) 及时发货
+    FROM dwm.dwd_th_ffm_outbound_dayV2
+    where 1=1
+        and LEFT(deadline,10) BETWEEN LEFT(now() - INTERVAL 7 day,10) AND LEFT(now()- INTERVAL 1 day,10)
+        and is_time=1
+        and platform_source='Shopee'
+        and TYPE='B2C'
+    GROUP BY 1,2,3,4
+) t27 on t0.日期 = t27.日期 and t0.仓库 = t27.仓库
+
+-- shopee B2C 应发货
+left join
+(
+    SELECT 
+        LEFT(deadline,10) 日期
+        ,'Shopee' paltform
+        ,warehouse_name
+        ,type 单据
+        ,'应发货' 指标
+        ,sum(应发货) 应发货
+    FROM dwm.dwd_th_ffm_outbound_dayV2
+    where 1=1
+        and LEFT(deadline,10) BETWEEN LEFT(now() - INTERVAL 7 day,10) AND LEFT(now()- INTERVAL 1 day,10)
+        and is_time=1
+        and platform_source='Shopee'
+        and TYPE='B2C'
+    GROUP BY 1,2,3,4
+) t28 on t0.日期 = t28.日期 and t0.仓库 = t28.仓库
+
+
+
+
 where 1=1
 	and t0.日期='${dt}'
 	and t0.仓库='BST'
