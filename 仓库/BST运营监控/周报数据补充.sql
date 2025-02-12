@@ -553,7 +553,6 @@ from
 
 
 union 
--- 'BPL-Return', 'BST', 'LAS' 出库
 select
     out.warehouse_name
     ,out.title_name

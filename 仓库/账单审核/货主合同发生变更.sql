@@ -144,7 +144,8 @@ left join wms_production.warehouse_billing_rules_ref wbrr on wbrr.warehouse_bill
 left join wms_production.seller s on s.id = wbrr.seller_id
 left join wms_production.warehouse w on w.id = wbrr.warehouse_id
 -- where wbr.billing_code = 'R215'
-where date(wbrd.modified) >= '2024-06-01' # 从6月到现在有哪些合同规则发生过变更
+where 1=1
+and date(wbrd.modified) >= '2024-06-01' # 从6月到现在有哪些合同规则发生过变更
 order by 3,8
 
 

@@ -3,75 +3,97 @@ select
     ,t0.日期
     ,t0.仓库
     ,t0.在职人数
-    ,t1.应出勤
-    ,t2.实际出勤
-    ,round(t2.实际出勤/t0.在职人数, 4)  在职出勤率
-    ,round(t2.实际出勤/t1.应出勤, 4)  应出勤率
+    ,t0.应出勤
+    ,t0.实际出勤
+    ,round(t0.实际出勤/t0.在职人数, 4)  在职出勤率
+    ,round(t0.实际出勤/t0.应出勤, 4)  应出勤率
     ,t5.临时工时
     ,t6.加班时长
     ,t7.采购订单到货单量
-    ,t8.销退订单到货单量
+    ,t7.销退订单到货单量
     ,t9.采购订单入库单量
-    ,t10.销退订单入库单量
+    ,t9.销退订单入库单量
     ,t11.采购订单及时入库
-    ,t12.销退订单及时入库
-    ,t13.采购订单应入库
-    ,t14.销退订单应入库
-    ,t11.采购订单及时入库 / t13.采购订单应入库 采购订单入库及时率
-    ,t12.销退订单及时入库 / t14.销退订单应入库 销退订单入库及时率
-    ,t15.采购订单未及时入库
-    ,t16.销退订单未及时入库
+    ,t11.销退订单及时入库
+    ,t11.采购订单应入库
+    ,t11.销退订单应入库
+    ,t11.采购订单及时入库 / t11.采购订单应入库 采购订单入库及时率
+    ,t11.销退订单及时入库 / t11.销退订单应入库 销退订单入库及时率
+    ,t11.采购订单未及时入库
+    ,t11.销退订单未及时入库
     ,t17.采购订单及时上架
-    ,t18.销退订单及时上架
-    ,t19.采购订单应上架
-    ,t20.销退订单应上架
-    ,t17.采购订单及时上架 / t19.采购订单应上架 采购订单上架及时率
-    ,t18.销退订单及时上架 / t20.销退订单应上架 销退订单上架及时率
-    ,t21.采购订单未及时上架
-    ,t22.销退订单未及时上架
+    ,t17.销退订单及时上架
+    ,t17.采购订单应上架
+    ,t17.销退订单应上架
+    ,t17.采购订单及时上架 / t17.采购订单应上架 采购订单上架及时率
+    ,t17.销退订单及时上架 / t17.销退订单应上架 销退订单上架及时率
+    ,t17.采购订单未及时上架
+    ,t17.销退订单未及时上架
+    ,t23.B2C已审核单量
+    ,t23.B2C未审核单量
+    ,t23.B2B已审核单量
+    ,t23.B2B未审核单量
+    ,t25.B2C商品数量
+    ,t25.B2C出库单量
+    ,t26.B2B出库单量
+    ,sum(t27.B2CShopee及时发货 + t27.B2CTikTok及时发货 + t27.B2CLAZADA及时发货 +t27.B2COther及时发货 ) / sum(t27.B2CShopee应发货 + t27.B2CTikTok及时发货 + t27.B2CLAZADA应发货 + t27.B2COther应发货) B2C发货及时率
+    ,t27.B2CShopee及时发货
+    ,t27.B2CShopee应发货
+    ,t27.B2CShopee未及时发货
+    ,t27.B2CShopee及时发货 / t27.B2CShopee应发货 B2CShopee发货及时率
+    ,t27.B2CTikTok及时发货
+    ,t27.B2CTikTok应发货
+    ,t27.B2CTikTok未及时发货
+    ,t27.B2CTikTok及时发货 / t27.B2CTikTok应发货 B2CTikTok发货及时率
+    ,t27.B2CLAZADA及时发货
+    ,t27.B2CLAZADA应发货
+    ,t27.B2CLAZADA未及时发货
+    ,t27.B2CLAZADA及时发货 / t27.B2CLAZADA应发货 B2CLAZADA发货及时率
+    ,t27.B2COther及时发货
+    ,t27.B2COther应发货
+    ,t27.B2COther未及时发货
+    ,t27.B2COther及时发货 / t27.B2COther应发货 B2COther发货及时率
+    ,t27.B2CShopee未及时发货 + t27.B2CTikTok未及时发货 + t27.B2CLAZADA未及时发货 + t27.B2COther未及时发货 未及时发货
+    ,sum(t28.B2CShopee及时打包 + t28.B2CTikTok及时打包 + t28.B2CLAZADA及时打包 + t28.B2COther及时打包) / sum(t28.B2CShopee应打包 + t28.B2CTikTok应打包 + t28.B2CLAZADA应打包 + t28.B2COther应打包) B2C打包及时率
+    ,t28.B2CShopee及时打包
+    ,t28.B2CShopee应打包
+    ,t28.B2CShopee未及时打包
+    ,t28.B2CShopee及时打包 / t28.B2CShopee应打包 B2CShopee打包及时率
+    ,t28.B2CTikTok及时打包
+    ,t28.B2CTikTok应打包
+    ,t28.B2CTikTok未及时打包
+    ,t28.B2CTikTok及时打包 / t28.B2CTikTok应打包 B2CTikTok打包及时率
+    ,t28.B2CLAZADA及时打包
+    ,t28.B2CLAZADA应打包
+    ,t28.B2CLAZADA未及时打包
+    ,t28.B2CLAZADA及时打包 / t28.B2CLAZADA应打包 B2CLAZADA打包及时率
+    ,t28.B2COther及时打包
+    ,t28.B2COther应打包
+    ,t28.B2COther未及时打包
+    ,t28.B2COther及时打包 / t28.B2COther应打包 B2COther打包及时率
+    ,t28.B2CShopee未及时打包 + t28.B2CTikTok未及时打包 + t28.B2CLAZADA未及时打包 + t28.B2COther未及时打包 未及时打包
+    ,t29.B2B及时发货
+    ,t29.B2B应发货
+    ,t29.B2B未及时发货
+    ,t29.B2B及时发货 / t29.B2B应发货 B2B发货及时率
 from
-(
+( -- 出勤情况
     select 
         left(统计日期,10)日期
         ,仓库
         ,'在职人数' type
         ,sum(在职) 在职人数
+        ,sum(应出勤) 应出勤
+        ,sum(出勤) 实际出勤
     from 
     dwm.dwd_th_ffm_staff_dayV2
     WHERE left(统计日期,10)>=left(NOW() - interval 7 day,10)
         and 仓库 is not null
+        and 在职 = 1
     GROUP BY 1,2,3
 ) t0
 left join
-(
-    select 
-        left(统计日期,10) 日期
-        ,仓库
-        ,'应出勤' type
-        ,sum(应出勤) 应出勤
-    from 
-    dwm.dwd_th_ffm_staff_dayV2
-    WHERE left(统计日期,10)>=left(NOW() - interval 7 day,10)
-        and 仓库 is not null
-        and 在职=1
-    GROUP BY 1,2,3
-) t1 on t0.日期 = t1.日期 and t0.仓库 = t1.仓库
-left join
-(
-    select 
-        left(统计日期,10) 日期
-        ,仓库
-        ,'实际出勤' type
-        ,sum(出勤)  实际出勤
-    from 
-    dwm.dwd_th_ffm_staff_dayV2
-    WHERE left(统计日期,10)>=left(NOW() - interval 7 day,10)
-        and 仓库 is not null
-        and 在职=1
-    GROUP BY 1,2,3
-) t2 on t0.日期 = t2.日期 and t0.仓库 = t2.仓库
-left join
-(
+( -- 临时工时
     select 
         left(dt,10) 日期
         ,warehouse 仓库
@@ -82,7 +104,7 @@ left join
     GROUP BY 1,2,3
 ) t5 on t0.日期 = t5.日期 and t0.仓库 = t5.仓库
 left join
-(
+( -- 加班时长
     select 
         left(申请日期,10) 日期
         ,仓库
@@ -157,386 +179,207 @@ left join
     GROUP BY 1,2,3
 ) t6 on t0.日期 = t6.日期 and t0.仓库 = t6.仓库
 -- 入库
--- 采购订单 到货单量
+-- 采购订单 销退订单 到货单量
 left join
 (
     select 
         LEFT(reg_time,10) 日期
         ,仓库名称 仓库
-        ,单据
         ,'到货单量' 指标
-        ,count(notice_number) 采购订单到货单量
+        ,count(if(单据='采购订单', notice_number, null)) 采购订单到货单量
+        ,count(if(单据='销退订单', notice_number, null)) 销退订单到货单量
     FROM dwm.dwd_th_ffm_arrivalnotice_dayV2
     WHERE 1=1
-        and 单据='采购订单'
+        /* and 单据='采购订单' */
         and left(reg_time,10) BETWEEN LEFT(now()- INTERVAL 7 DAY ,10) AND LEFT(now()- INTERVAL 1 DAY ,10)
-    group by 1,2,3,4
+    group by 1,2,3
 )t7 on t0.日期 = t7.日期 and t0.仓库 = t7.仓库
 
--- 销退订单 到货单量
-left join
-(
-    select 
-        LEFT(reg_time,10) 日期
-        ,仓库名称 仓库
-        ,单据
-        ,'到货单量' 指标
-        ,count(notice_number) 销退订单到货单量
-    FROM dwm.dwd_th_ffm_arrivalnotice_dayV2
-    WHERE 1=1
-        and 单据='销退订单'
-        and left(reg_time,10) BETWEEN LEFT(now()- INTERVAL 7 DAY ,10) AND LEFT(now()- INTERVAL 1 DAY ,10)
-    group by 1,2,3,4
-)t8 on t0.日期 = t8.日期 and t0.仓库 = t8.仓库
-
--- 采购订单 入库单量
+-- 采购订单 销退订单 入库单量
 left join
 (
     select 
         LEFT(complete_time,10) 日期
         ,仓库名称 仓库
-        ,单据
         ,'入库单量' 指标
-        ,count(notice_number) 采购订单入库单量
+        ,count(if(单据='采购订单', notice_number, null)) 采购订单入库单量
+        ,count(if(单据='销退订单', notice_number, null)) 销退订单入库单量
     FROM dwm.dwd_th_ffm_arrivalnotice_dayV2
     WHERE 1=1
-        and 单据='采购订单'
+        /* and 单据='采购订单' */
         and left(complete_time,10) BETWEEN LEFT(now()- INTERVAL 7 DAY ,10) AND LEFT(now()- INTERVAL 1 DAY ,10)
-    group by 1,2,3,4
+    group by 1,2,3
 ) t9 on t0.日期 = t9.日期 and t0.仓库 = t9.仓库
-
--- 销退订单 入库单量
-left join
-(
-    select 
-        LEFT(complete_time,10) 日期
-        ,仓库名称 仓库
-        ,单据
-        ,'入库单量' 指标
-        ,count(notice_number) 销退订单入库单量
-    FROM dwm.dwd_th_ffm_arrivalnotice_dayV2
-    WHERE 1=1
-        and 单据='销退订单'
-        and left(complete_time,10) BETWEEN LEFT(now()- INTERVAL 7 DAY ,10) AND LEFT(now()- INTERVAL 1 DAY ,10)
-    group by 1,2,3,4
-) t10 on t0.日期 = t10.日期 and t0.仓库 = t10.仓库
-
--- 采购订单 及时入库
+-- 采购订单 销退订单 及时入库 应入库 未及时入库
 left join
 (
     SELECT 
         LEFT(receive_deadline_24h,10) 日期
         ,仓库名称 仓库
-        ,单据
         ,'及时入库' TYPE
-        ,sum(及时入库) 采购订单及时入库
+        ,sum(if(单据='采购订单', 及时入库, 0)) 采购订单及时入库
+        ,sum(if(单据='销退订单', 及时入库, 0)) 销退订单及时入库
+
+        ,sum(if(单据='采购订单', 及时入库, 0)) 采购订单应入库
+        ,sum(if(单据='销退订单', 及时入库, 0)) 销退订单应入库
+
+        ,count(if(单据='采购订单' and 及时入库='0' and 应入库='1', notice_number, null)) 采购订单未及时入库
+        ,count(if(单据='销退订单' and 及时入库='0' and 应入库='1', notice_number, null)) 销退订单未及时入库
+
     FROM dwm.dwd_th_ffm_arrivalnotice_dayV2
     WHERE 1=1
-        and 单据='采购订单'
+        /* and 单据='采购订单' */
         and left(receive_deadline_24h,10) BETWEEN LEFT(now()- INTERVAL 7 DAY ,10) AND LEFT(now()- INTERVAL 1 DAY ,10)
-    group by 1,2,3,4
+    group by 1,2,3
 ) t11 on t0.日期 = t11.日期 and t0.仓库 = t11.仓库
 
--- 销退订单 及时入库
-left join
-(
-    SELECT 
-        LEFT(receive_deadline_24h,10) 日期
-        ,仓库名称 仓库
-        ,单据
-        ,'及时入库' TYPE
-        ,sum(及时入库) 销退订单及时入库
-    FROM dwm.dwd_th_ffm_arrivalnotice_dayV2
-    WHERE 1=1
-        and 单据='销退订单'
-        and left(receive_deadline_24h,10) BETWEEN LEFT(now()- INTERVAL 7 DAY ,10) AND LEFT(now()- INTERVAL 1 DAY ,10)
-    group by 1,2,3,4
-) t12 on t0.日期 = t12.日期 and t0.仓库 = t12.仓库
-
--- 采购订单 应入库
-left join
-(
-    SELECT 
-        LEFT(receive_deadline_24h,10) 日期
-        ,仓库名称 仓库
-        ,单据
-        ,'应入库' TYPE
-        ,sum(应入库) 采购订单应入库
-    FROM dwm.dwd_th_ffm_arrivalnotice_dayV2
-    WHERE 1=1
-        and 单据='采购订单'
-        and left(receive_deadline_24h,10) BETWEEN LEFT(now()- INTERVAL 7 DAY ,10) AND LEFT(now()- INTERVAL 1 DAY ,10)
-    group by 1,2,3,4
-) t13 on t0.日期 = t13.日期 and t0.仓库 = t13.仓库
-
--- 销退订单 应入库
-left join
-(
-    SELECT 
-        LEFT(receive_deadline_24h,10) 日期
-        ,仓库名称 仓库
-        ,单据
-        ,'应入库' TYPE
-        ,sum(应入库) 销退订单应入库
-    FROM dwm.dwd_th_ffm_arrivalnotice_dayV2
-    WHERE 1=1
-        and 单据='销退订单'
-        and left(receive_deadline_24h,10) BETWEEN LEFT(now()- INTERVAL 7 DAY ,10) AND LEFT(now()- INTERVAL 1 DAY ,10)
-    group by 1,2,3,4
-) t14 on t0.日期 = t14.日期 and t0.仓库 = t14.仓库
-
--- 采购订单 未及时入库
-left join
-(
-    SELECT 
-        LEFT(receive_deadline_24h,10) 日期
-        ,仓库名称 仓库
-        ,单据
-        ,'未及时入库' 未及时入库
-        ,count(notice_number) 采购订单未及时入库
-    FROM dwm.dwd_th_ffm_arrivalnotice_dayV2
-    WHERE 1=1
-        and 单据='采购订单'
-        and 及时入库='0'
-        and  应入库='1'
-        and left(receive_deadline_24h,10) BETWEEN LEFT(now()- INTERVAL 7 DAY ,10) AND LEFT(now()- INTERVAL 1 DAY ,10)
-    group by 1,2,3,4
-) t15 on t0.日期 = t15.日期 and t0.仓库 = t15.仓库
-
--- 销退订单 未及时入库
-left join
-(
-    SELECT 
-        LEFT(receive_deadline_24h,10) 日期
-        ,仓库名称 仓库
-        ,单据
-        ,'未及时入库' 未及时入库
-        ,count(notice_number) 销退订单未及时入库
-    FROM dwm.dwd_th_ffm_arrivalnotice_dayV2
-    WHERE 1=1
-        and 单据='销退订单'
-        and 及时入库='0'
-        and  应入库='1'
-        and left(receive_deadline_24h,10) BETWEEN LEFT(now()- INTERVAL 7 DAY ,10) AND LEFT(now()- INTERVAL 1 DAY ,10)
-    group by 1,2,3,4
-) t16 on t0.日期 = t16.日期 and t0.仓库 = t16.仓库
-
--- 采购订单 及时上架
+-- 采购订单 销退订单 及时上架 应上架 未及时上架
 left join
 (
     SELECT 
         LEFT(putaway_deadline_48h,10) 日期
         ,仓库名称 仓库
-        ,单据
         ,'及时上架' TYPE
-        ,sum(及时上架) 采购订单及时上架
+        ,sum(if(单据='采购订单', 及时上架, 0)) 采购订单及时上架
+        ,sum(if(单据='销退订单', 及时上架, 0)) 销退订单及时上架
+
+        ,sum(if(单据='采购订单', 应上架, 0)) 采购订单应上架
+        ,sum(if(单据='销退订单', 应上架, 0)) 销退订单应上架
+
+        ,count(if(单据='采购订单' and 及时上架='0' and  应上架='1' AND shelf_status <> '1080', notice_number, null)) 采购订单未及时上架
+        ,count(if(单据='销退订单' and 及时上架='0' and  应上架='1' AND shelf_status <> '1080', notice_number, null)) 销退订单未及时上架
+
     FROM dwm.dwd_th_ffm_arrivalnotice_dayV2
     WHERE 1=1
-        and 单据='采购订单'
+        /* and 单据='采购订单' */
         and left(putaway_deadline_48h,10) BETWEEN LEFT(now()- INTERVAL 7 DAY ,10) AND LEFT(now()- INTERVAL 1 DAY ,10)
-    group by 1,2,3,4
+    group by 1,2,3
 ) t17 on t0.日期 = t17.日期 and t0.仓库 = t17.仓库
 
--- 销退订单 及时上架
-left join
-(
-    SELECT 
-        LEFT(putaway_deadline_48h,10) 日期
-        ,仓库名称 仓库
-        ,单据
-        ,'及时上架' TYPE
-        ,sum(及时上架) 销退订单及时上架
-    FROM dwm.dwd_th_ffm_arrivalnotice_dayV2
-    WHERE 1=1
-        and 单据='销退订单'
-        and left(putaway_deadline_48h,10) BETWEEN LEFT(now()- INTERVAL 7 DAY ,10) AND LEFT(now()- INTERVAL 1 DAY ,10)
-    group by 1,2,3,4
-) t18 on t0.日期 = t18.日期 and t0.仓库 = t18.仓库
-
--- 采购订单 应上架
-left join
-(
-    SELECT 
-        LEFT(putaway_deadline_48h,10) 日期
-        ,仓库名称 仓库
-        ,单据
-        ,'应上架' TYPE
-        ,sum(应上架) 采购订单应上架
-    FROM dwm.dwd_th_ffm_arrivalnotice_dayV2
-    WHERE 1=1
-        and 单据='采购订单'
-        and left(putaway_deadline_48h,10) BETWEEN LEFT(now()- INTERVAL 7 DAY ,10) AND LEFT(now()- INTERVAL 1 DAY ,10)
-    group by 1,2,3,4
-) t19 on t0.日期 = t19.日期 and t0.仓库 = t19.仓库
-
--- 销退订单 应上架
-left join
-(
-    SELECT 
-        LEFT(putaway_deadline_48h,10) 日期
-        ,仓库名称 仓库
-        ,单据
-        ,'应上架' TYPE
-        ,sum(应上架) 销退订单应上架
-    FROM dwm.dwd_th_ffm_arrivalnotice_dayV2
-    WHERE 1=1
-        and 单据='销退订单'
-        and left(putaway_deadline_48h,10) BETWEEN LEFT(now()- INTERVAL 7 DAY ,10) AND LEFT(now()- INTERVAL 1 DAY ,10)
-    group by 1,2,3,4
-) t20 on t0.日期 = t20.日期 and t0.仓库 = t20.仓库
-
--- 采购订单 未及时上架
-left join
-(
-    SELECT 
-        /* LEFT(now()- INTERVAL 1 DAY ,10) 日期 */
-        LEFT(putaway_deadline_48h,10) 日期
-        ,仓库名称 仓库
-        ,单据
-        ,'未及时上架' type
-        ,count(notice_number) 采购订单未及时上架
-    FROM dwm.dwd_th_ffm_arrivalnotice_dayV2
-    WHERE 1=1
-    and 单据='采购订单'
-    and 及时上架='0' 
-    and  应上架='1' 
-    AND shelf_status <> '1080'
-    and left(putaway_deadline_48h,10) BETWEEN LEFT(now()- INTERVAL 7 DAY ,10) AND LEFT(now()- INTERVAL 1 DAY ,10)
-    group by 1,2,3,4
-) t21 on t0.日期 = t21.日期 and t0.仓库 = t21.仓库
-
--- 销退订单 未及时上架
-left join
-(
-    SELECT 
-        /* LEFT(now()- INTERVAL 1 DAY ,10) 日期 */
-        LEFT(putaway_deadline_48h,10) 日期
-        ,仓库名称 仓库
-        ,单据
-        ,'未及时上架' type
-        ,count(notice_number) 销退订单未及时上架
-    FROM dwm.dwd_th_ffm_arrivalnotice_dayV2
-    WHERE 1=1
-    and 单据='销退订单'
-    and 及时上架='0' 
-    and  应上架='1' 
-    AND shelf_status <> '1080'
-    and left(putaway_deadline_48h,10) BETWEEN LEFT(now()- INTERVAL 7 DAY ,10) AND LEFT(now()- INTERVAL 1 DAY ,10)
-    group by 1,2,3,4
-) t22 on t0.日期 = t22.日期 and t0.仓库 = t22.仓库
-
 -- 出库
--- B2C 已审核单量
+-- B2C  已审核单量 未审核单量
 left join
 (
     SELECT 
         LEFT(created_time,10) 日期
         ,null paltform
         ,warehouse_name
-        ,TYPE 单据
         ,'已审核单量' 指标
-        ,COUNT(delivery_sn) 已审核单量
+        ,COUNT(if(TYPE='B2C', delivery_sn, null)) B2C已审核单量
+        ,COUNT(if(TYPE='B2C' and audit_time IS  NULL, delivery_sn, null)) B2C未审核单量
+
+        ,COUNT(if(TYPE='B2B', delivery_sn, null)) B2B已审核单量
+        ,COUNT(if(TYPE='B2B' and audit_time IS  NULL, delivery_sn, null)) B2B未审核单量
+
     FROM dwm.dwd_th_ffm_outbound_dayV2
     where  1=1
         and LEFT(created_time,10) BETWEEN LEFT(now() - INTERVAL 7 day,10) AND LEFT(now()- INTERVAL 1 day,10)
-        AND audit_time IS NOT NULL
-        and TYPE='B2C'
-    GROUP BY 1,2,3,4
-) t23 on t0.日期 = t23.日期 and t0.仓库 = t23.仓库
+        /* AND audit_time IS NOT NULL
+        and TYPE='B2C' */
+    GROUP BY 1,2,3
+) t23 on t0.日期 = t23.日期 and t0.仓库 = t23.warehouse_name
 
--- B2C 未审核单量
+-- B2C 商品数量 出库单量
 left join
 (
     SELECT 
-        LEFT(created_time,10) 日期
-        ,null paltform
+        LEFT(delivery_time,10) 日期
         ,warehouse_name
-        ,type 单据
-        ,'未审核单量' 指标
-        ,COUNT(delivery_sn) 未审核单量
-    FROM dwm.dwd_th_ffm_outbound_dayV2
-    where 1=1
-        and LEFT(created_time,10) BETWEEN LEFT(now() - INTERVAL 7 day,10) AND LEFT(now()- INTERVAL 1 day,10)
-        AND  audit_time IS  NULL
-        and TYPE='B2C'
-    GROUP BY 1,2,3,4
-) t24 on t0.日期 = t24.日期 and t0.仓库 = t24.仓库
-
--- B2C 商品数量
-left join
-(
-    SELECT 
-        LEFT(if(type='B2C', delivery_time, pack_time),10) 日期
-        ,null paltform
-        ,warehouse_name
-        ,type 单据
         ,'商品数量' 指标
-        ,sum(goods_num) 商品数量
+        ,sum(if(audit_time is not null and TYPE='B2C', goods_num, 0)) B2C商品数量
+        ,COUNT(if(TYPE='B2C', delivery_sn, null)) B2C出库单量
     FROM dwm.dwd_th_ffm_outbound_dayV2
     where 1=1
         and LEFT(created_time,10) BETWEEN LEFT(now() - INTERVAL 7 day,10) AND LEFT(now()- INTERVAL 1 day,10)
-        and audit_time is not null
-        and TYPE='B2C'
-    GROUP BY 1,2,3,4
-) t25 on t0.日期 = t25.日期 and t0.仓库 = t25.仓库
+        /* and audit_time is not null
+        and TYPE='B2C' */
+    GROUP BY 1,2,3
+) t25 on t0.日期 = t25.日期 and t0.仓库 = t25.warehouse_name
 
--- B2C 出库单量
+-- B2B 出库单量
 left join
 (
     SELECT 
-        LEFT(if(type='B2C', delivery_time, pack_time),10) 日期
-        ,null paltform
+        LEFT(pack_time, 10) 日期
         ,warehouse_name
-        ,type 单据
         ,'出库单量' 指标
-        ,COUNT(delivery_sn) 出库单量
+        ,COUNT(if(TYPE='B2B', delivery_sn, null)) B2B出库单量
     FROM dwm.dwd_th_ffm_outbound_dayV2
     where 1=1
         and LEFT(pack_time,10) BETWEEN LEFT(now() - INTERVAL 7 day,10) AND LEFT(now()- INTERVAL 1 day,10)
-        and TYPE='B2C'
-    GROUP BY 1,2,3,4
-) t26 on t0.日期 = t26.日期 and t0.仓库 = t26.仓库
+    GROUP BY 1,2,3
+) t26 on t0.日期 = t26.日期 and t0.仓库 = t26.warehouse_name
 
--- shopee B2C 及时发货
+-- shopee TikTok LAZADA Other B2C 及时发货 应发货 未及时发货
 left join
 (
     SELECT 
         LEFT(deadline,10) 日期
-        ,'Shopee' paltform
         ,warehouse_name
-        ,type 单据
         ,'及时发货' 指标
-        ,sum(及时发货) 及时发货
+        ,sum(if(is_time=1 and platform_source='Shopee' and TYPE='B2C', 及时发货, 0)) B2CShopee及时发货
+        ,sum(if(is_time=1 and platform_source='Shopee' and TYPE='B2C', 应发货, 0)) B2CShopee应发货
+        ,count(if(is_time=1 and platform_source='Shopee' and TYPE='B2C' and 应发货=1 and 及时发货=0, delivery_sn, null)) B2CShopee未及时发货
+
+        ,sum(if(is_time=1 and platform_source='Tik Tok' and TYPE='B2C', 及时发货, 0)) B2CTikTok及时发货
+        ,sum(if(is_time=1 and platform_source='Tik Tok' and TYPE='B2C', 应发货, 0)) B2CTikTok应发货
+        ,count(if(is_time=1 and platform_source='Tik Tok' and TYPE='B2C' and 应发货=1 and 及时发货=0, delivery_sn, null)) B2CTikTok未及时发货
+
+        ,sum(if(is_time=1 and platform_source='LAZADA' and TYPE='B2C', 及时发货, 0)) B2CLAZADA及时发货
+        ,sum(if(is_time=1 and platform_source='LAZADA' and TYPE='B2C', 应发货, 0)) B2CLAZADA应发货
+        ,count(if(is_time=1 and platform_source='LAZADA' and TYPE='B2C' and 应发货=1 and 及时发货=0, delivery_sn, null)) B2CLAZADA未及时发货
+        
+        ,sum(if(is_time=1 and platform_source='Other' and TYPE='B2C', 及时发货, 0)) B2COther及时发货
+        ,sum(if(is_time=1 and platform_source='Other' and TYPE='B2C', 应发货, 0)) B2COther应发货
+        ,count(if(is_time=1 and platform_source='Other' and TYPE='B2C' and 应发货=1 and 及时发货=0, delivery_sn, null)) B2COther未及时发货
     FROM dwm.dwd_th_ffm_outbound_dayV2
     where 1=1
         and LEFT(deadline,10) BETWEEN LEFT(now() - INTERVAL 7 day,10) AND LEFT(now()- INTERVAL 1 day,10)
-        and is_time=1
-        and platform_source='Shopee'
-        and TYPE='B2C'
-    GROUP BY 1,2,3,4
-) t27 on t0.日期 = t27.日期 and t0.仓库 = t27.仓库
+    GROUP BY 1,2,3
+) t27 on t0.日期 = t27.日期 and t0.仓库 = t27.warehouse_name
+left join 
+-- shopee TikTok LAZADA Other B2C 及时打包 应打包 未及时打包
+(
+        SELECT 
+        LEFT(pack_deadline,10) 日期
+        ,warehouse_name
+        ,'及时打包' 指标
+        ,sum(if(is_time=1 and platform_source='Shopee' and TYPE='B2C', 及时打包)) B2CShopee及时打包
+        ,sum(if(is_time=1 and platform_source='Shopee' and TYPE='B2C', 应打包)) B2CShopee应打包
+        ,count(if(is_time=1 and platform_source='Shopee' and TYPE='B2C' and 应打包=1 and 及时打包=0, delivery_sn, null)) B2CShopee未及时打包
 
--- shopee B2C 应发货
+        ,sum(if(is_time=1 and platform_source='Tik Tok' and TYPE='B2C', 及时打包)) B2CTikTok及时打包
+        ,sum(if(is_time=1 and platform_source='Tik Tok' and TYPE='B2C', 应打包)) B2CTikTok应打包
+        ,count(if(is_time=1 and platform_source='Tik Tok' and TYPE='B2C' and 应打包=1 and 及时打包=0, delivery_sn, null)) B2CTikTok未及时打包
+
+        ,sum(if(is_time=1 and platform_source='LAZADA' and TYPE='B2C', 及时打包)) B2CLAZADA及时打包
+        ,sum(if(is_time=1 and platform_source='LAZADA' and TYPE='B2C', 应打包)) B2CLAZADA应打包
+        ,count(if(is_time=1 and platform_source='LAZADA' and TYPE='B2C' and 应打包=1 and 及时打包=0, delivery_sn, null)) B2CLAZADA未及时打包
+
+        ,sum(if(is_time=1 and platform_source='Other' and TYPE='B2C', 及时打包)) B2COther及时打包
+        ,sum(if(is_time=1 and platform_source='Other' and TYPE='B2C', 应打包)) B2COther应打包
+        ,count(if(is_time=1 and platform_source='Other' and TYPE='B2C' and 应打包=1 and 及时打包=0, delivery_sn, null)) B2COther未及时打包
+
+    FROM dwm.dwd_th_ffm_outbound_dayV2
+    where 1=1
+        and LEFT(pack_deadline,10) BETWEEN LEFT(now() - INTERVAL 7 day,10) AND LEFT(now()- INTERVAL 1 day,10)
+    GROUP BY 1,2,3
+) t28 on t0.日期 = t28.日期 and t0.仓库 = t28.warehouse_name
 left join
+-- B2B 及时打包 应打包 未及时打包
 (
     SELECT 
-        LEFT(deadline,10) 日期
-        ,'Shopee' paltform
+        LEFT(pack_deadline,10) 日期
         ,warehouse_name
-        ,type 单据
-        ,'应发货' 指标
-        ,sum(应发货) 应发货
+        ,sum(if(is_time=1 and TYPE='B2B', 及时发货, 0)) B2B及时发货
+        ,sum(if(is_time=1 and TYPE='B2B', 应发货, 0)) B2B应发货
+        ,count(if(is_time=1 and TYPE='B2B' and 应发货=1 and 及时发货=0, delivery_sn, null)) B2B未及时发货
+
     FROM dwm.dwd_th_ffm_outbound_dayV2
     where 1=1
-        and LEFT(deadline,10) BETWEEN LEFT(now() - INTERVAL 7 day,10) AND LEFT(now()- INTERVAL 1 day,10)
-        and is_time=1
-        and platform_source='Shopee'
-        and TYPE='B2C'
-    GROUP BY 1,2,3,4
-) t28 on t0.日期 = t28.日期 and t0.仓库 = t28.仓库
-
-
-
+        and LEFT(pack_deadline,10) BETWEEN LEFT(now() - INTERVAL 7 day,10) AND LEFT(now()- INTERVAL 1 day,10)
+    GROUP BY 1,2
+) t29 on t0.日期 = t29.日期 and t0.仓库 = t29.warehouse_name
 
 where 1=1
 	and t0.日期='${dt}'

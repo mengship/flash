@@ -1,3 +1,6 @@
+
+
+
 -- erp 
 WITH a AS(
     SELECT 
@@ -339,8 +342,40 @@ WITH a AS(
         )
     GROUP BY 1,2,3,4
 )
-
-SELECT w.name 仓库,sl.name 客户,分类,jf_date,收入 FROM a
+select 
+    blp.billing_name_zh 收入类型,
+    CASE WHEN LEFT(blp.billing_name_zh,3) IN ('仓储费','入库费','出库费','包材费','卸货费') THEN LEFT(blp.billing_name_zh,3)
+        ELSE blp.billing_name_zh END 收入类型2,
+    left(bld.business_date,10) 日期,
+    week(left(bld.business_date,10)+ interval 1 day) 周,
+    case when  w.name='AutoWarehouse' then 'AGV'
+        when w.name='BPL-Return Warehouse' then 'BPL-Return'
+        when w.name='BPL3-LIVESTREAM' then 'BPL3'
+        when w.name='BangsaoThong' then 'BST'
+        when w.name IN ('BKK-WH-LAS2电商仓') then 'LAS'
+        when w.name='LCP Warehouse' then 'LCP' end 仓库名称,
+    sum(bld.settlement_amount)/100 amount -- 结算金额
+from wms_production.billing_detail bld
+left join wms_production.billing_projects blp on bld.billing_projects_id= blp.id
+left join wms_production.warehouse w on bld.warehouse_id=w.id
+where 1=1
+    -- and bl.type='1'
+    -- and billing_name_zh='操作费'
+    and left(bld.business_date,10) >=left(now() - interval 70 day,10)
+    and LEFT(blp.billing_name_zh,2) <> '快递'
+group by 1,2,3,4,5 
+having 仓库名称 is not null
+  union
+SELECT 
+  分类
+  ,分类
+  ,jf_date
+  ,week(jf_date+ interval 1 day) 周
+  ,left(w.name, 4) 仓库
+  ,sum(收入) FROM a
 LEFT JOIN `erp_wms_prod`.`seller` sl on a.`seller_id`=sl.`id`
 LEFT JOIN `erp_wms_prod`.`warehouse` w on a.`warehouse_id`=w.`id`
 WHERE 收入 != 0
+and w.name='BPL3-LIVESTREAM'
+and jf_date >=left(now() - interval 70 day,10)
+group by 1,2,3,4,5

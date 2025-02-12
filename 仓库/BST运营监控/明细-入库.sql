@@ -1,3 +1,147 @@
+### V2
+
+select * from 
+(
+
+        select 
+            LEFT(reg_time,10) 日期
+            ,仓库名称
+            ,单据
+            ,'到货单量' 指标
+            ,count(notice_number) 数量
+        FROM dwm.dwd_th_ffm_arrivalnotice_dayV2 
+        WHERE left(reg_time,10) BETWEEN LEFT(now()- INTERVAL 100 DAY ,10) AND LEFT(now()- INTERVAL 1 DAY ,10)
+        group by 1,2,3,4
+
+        UNION 
+        select 
+            LEFT(complete_time,10) 日期
+            ,仓库名称
+            ,单据
+            ,'入库单量' 指标
+            ,count(notice_number) 数量
+        FROM dwm.dwd_th_ffm_arrivalnotice_dayV2 
+        WHERE left(complete_time,10) BETWEEN LEFT(now()- INTERVAL 100 DAY ,10) AND LEFT(now()- INTERVAL 1 DAY ,10)
+        group by 1,2,3,4
+
+        union
+        SELECT 
+            LEFT(receive_deadline_24h,10) 日期
+            ,仓库名称
+            ,单据
+            ,'及时入库' TYPE
+            ,sum(及时入库)
+        FROM dwm.dwd_th_ffm_arrivalnotice_dayV2 
+        WHERE left(receive_deadline_24h,10) BETWEEN LEFT(now()- INTERVAL 100 DAY ,10) AND LEFT(now()- INTERVAL 1 DAY ,10)
+        group by 1,2,3,4
+
+        union
+        SELECT 
+            LEFT(receive_deadline_24h,10) 日期
+            ,仓库名称
+            ,单据
+            ,'应入库' TYPE
+            ,sum(应入库)
+        FROM dwm.dwd_th_ffm_arrivalnotice_dayV2 
+        WHERE left(receive_deadline_24h,10) BETWEEN LEFT(now()- INTERVAL 100 DAY ,10) AND LEFT(now()- INTERVAL 1 DAY ,10)
+        group by 1,2,3,4
+
+        UNION
+        SELECT 
+            LEFT(receive_deadline_24h,10) 日期
+            ,仓库名称
+            ,单据
+            ,'未及时入库' type
+            ,count(notice_number) num
+        FROM dwm.dwd_th_ffm_arrivalnotice_dayV2 
+        WHERE 1=1
+            and 及时入库='0'
+            and  应入库='1'
+  			and left(receive_deadline_24h,10) BETWEEN LEFT(now()- INTERVAL 100 DAY ,10) AND LEFT(now()- INTERVAL 1 DAY ,10)
+        group by 1,2,3,4
+
+        union
+        SELECT 
+            LEFT(putaway_deadline_48h,10) 日期
+            ,仓库名称
+            ,单据
+            ,'及时上架' TYPE
+            ,sum(及时上架)
+        FROM dwm.dwd_th_ffm_arrivalnotice_dayV2 
+        WHERE left(putaway_deadline_48h,10) BETWEEN LEFT(now()- INTERVAL 100 DAY ,10) AND LEFT(now()- INTERVAL 1 DAY ,10)
+        group by 1,2,3,4
+
+        union
+        SELECT 
+            LEFT(putaway_deadline_48h,10) 日期
+            ,仓库名称
+            ,单据
+            ,'应上架' TYPE
+            ,sum(应上架)
+        FROM dwm.dwd_th_ffm_arrivalnotice_dayV2 
+        WHERE left(putaway_deadline_48h,10) BETWEEN LEFT(now()- INTERVAL 100 DAY ,10) AND LEFT(now()- INTERVAL 1 DAY ,10)
+        group by 1,2,3,4
+
+        UNION
+        SELECT 
+            LEFT(putaway_deadline_48h,10) 日期
+            ,仓库名称
+            ,单据
+            ,'未及时上架' type
+            ,count(notice_number) num
+        FROM dwm.dwd_th_ffm_arrivalnotice_dayV2 
+        WHERE 1=1
+        and 及时上架='0' 
+        and  应上架='1' 
+        AND shelf_status <> '1080'
+        and left(putaway_deadline_48h,10) BETWEEN LEFT(now()- INTERVAL 100 DAY ,10) AND LEFT(now()- INTERVAL 1 DAY ,10)
+        group by 1,2,3,4
+
+        union
+        -- 商品审核
+        SELECT 
+            LEFT(audit_deadline_time,10) 日期
+            ,warehouse_short_name
+            ,'' 单据
+            ,'应审核' type
+            ,sum(应审核) num
+        FROM dwm.dwd_th_ffm_goodsaudit_day 
+        WHERE 1=1
+        and  应审核='1' 
+        and left(audit_deadline_time,10) BETWEEN LEFT(now()- INTERVAL 100 DAY ,10) AND LEFT(now()- INTERVAL 1 DAY ,10)
+        group by 1,2,3,4
+
+        union
+        SELECT 
+            LEFT(audit_deadline_time,10) 日期
+            ,warehouse_short_name
+            ,'' 单据
+            ,'及时审核' type
+            ,sum(if(是否及时审核=1, 1, 0)) num
+        FROM dwm.dwd_th_ffm_goodsaudit_day 
+        WHERE 1=1
+        and  应审核='1' 
+        and left(audit_deadline_time,10) BETWEEN LEFT(now()- INTERVAL 100 DAY ,10) AND LEFT(now()- INTERVAL 1 DAY ,10)
+        group by 1,2,3,4
+
+        union
+        SELECT 
+            LEFT(audit_deadline_time,10) 日期
+            ,warehouse_short_name
+            ,'' 单据
+            ,'未及时审核' type
+            ,sum(if(是否及时审核=0, 1, 0)) num
+        FROM dwm.dwd_th_ffm_goodsaudit_day 
+        WHERE 1=1
+        and  应审核='1' 
+        and left(audit_deadline_time,10) BETWEEN LEFT(now()- INTERVAL 100 DAY ,10) AND LEFT(now()- INTERVAL 1 DAY ,10)
+        group by 1,2,3,4
+  
+) as b 
+    where 仓库名称 is not null 
+
+
+### V1
 WITH T1 as
 (
     SELECT 

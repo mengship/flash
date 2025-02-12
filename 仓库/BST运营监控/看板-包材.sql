@@ -27,7 +27,8 @@ from
         -- d.bar_code        as                         '包材条码',
         c.number          as                         '条码数量',
         -- e.seller_goods_id as                         '包材映射商品ID',
-        f.bar_code        as                         '包材映射商品条码'
+        f.bar_code        as                         '包材映射商品条码',
+        bp.billing_name_zh 计费项
     from wms_production.billing_detail a
         join wms_production.billing_projects b on a.billing_projects_id = b.id
         join wms_production.container_inventory_log c on a.business_id = c.container_order_id
@@ -54,6 +55,7 @@ from
         ,c.name 包材名称
         ,cubd.actual_num+0 条码数量
         ,c.external_code 包材映射商品条码
+        ,null 计费项
         -- ,cubd.seller_id
         -- ,cubd.warehouse_id
         
@@ -109,16 +111,17 @@ from
             left join oa_production.purchase_storage_product psp on ps.id=psp.psnoid
             left join oa_production.purchase_order po on po.pono=ps.po
             left join tmpale.tmp_th_mtr_name_list mtr  on mtr.bar_code=psp.product_option_code
-            where psp.real_arrival_date is not null
+            where 1=1
+                -- and psp.real_arrival_date is not null
                 and ps.status in (3,4,6)
-                and ps.cost_company_name='Flash Express'
+                and ps.cost_company_name='Flash Fulfillment'
                 -- and mtr.category='物料'
-                and mtr.name  in
-                ('集包扎带','封车扎带','A4塑料袋','A3塑料袋','集包袋','蓝牙打印纸','Flash胶带','透明胶带','A4气泡袋','A4信封袋',
-                '易碎贴纸','COD贴纸','易碎贴纸','PC打印纸单层','大PC打印纸','拉伸膜','气泡膜','小号集包袋',
-                '水果箱(新款)C+9','水果箱(新款)D+11','水果箱M','水果箱M+','水果箱(新款)M','水果箱(新款)S+','水果箱(新款)L','水果箱(新款)M+','水果箱L','水果箱S+',
-                '纸箱(棕色)Mini','纸箱(棕色)S', '纸箱(棕色)S+','纸箱(棕色)M','纸箱(棕色)M+','纸箱(棕色)L',
-                '纸箱(黄色)Mini','纸箱(黄色)S', '纸箱(黄色)S+','纸箱(黄色)M','纸箱(黄色)M+','纸箱(黄色)L')
+                -- and mtr.name  in
+                -- ('集包扎带','封车扎带','A4塑料袋','A3塑料袋','集包袋','蓝牙打印纸','Flash胶带','透明胶带','A4气泡袋','A4信封袋',
+                -- '易碎贴纸','COD贴纸','易碎贴纸','PC打印纸单层','大PC打印纸','拉伸膜','气泡膜','小号集包袋',
+                -- '水果箱(新款)C+9','水果箱(新款)D+11','水果箱M','水果箱M+','水果箱(新款)M','水果箱(新款)S+','水果箱(新款)L','水果箱(新款)M+','水果箱L','水果箱S+',
+                -- '纸箱(棕色)Mini','纸箱(棕色)S', '纸箱(棕色)S+','纸箱(棕色)M','纸箱(棕色)M+','纸箱(棕色)L',
+                -- '纸箱(黄色)Mini','纸箱(黄色)S', '纸箱(黄色)S+','纸箱(黄色)M','纸箱(黄色)M+','纸箱(黄色)L')
             group by 1,2,3,4,5,6,7,8,9
         ) ps0
     ) ps1

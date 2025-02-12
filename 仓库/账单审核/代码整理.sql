@@ -1,3 +1,5 @@
+-- 账单审核情况商务已审 数据未审
+
 select 
     distinct billing_sn  
     ,s.name
@@ -224,7 +226,7 @@ from
         ,gg.id
         ,gg.seller_name
     from 
-    ( 
+    (
         select 
             a.delivery_sn
             ,c.goods_number
@@ -308,7 +310,9 @@ from
         left join seller s on a.seller_id =s.id
         left join seller_goods sg on sg.id =a.seller_goods_id 
         left join wms_production.warehouse w on a.warehouse_id =w.id 
-        where a.date between date('2024-09-01') and  date('2024-09-30') and s.name='LGF TiTe 提特' 
+        where 1=1
+        and a.date between date('2024-09-01') and  date('2024-09-30') 
+        and s.name='LGF TiTe 提特' 
     )
     group by age,seller_name
 )
@@ -561,7 +565,11 @@ from
         left join wms_production.delivery_order_goods as c on c.delivery_order_id = a.id
         left join wms_production.seller_goods as g on c.seller_goods_id =g.id
         left join `wms_production`.seller s on s.id=a.`seller_id` 
-        where  s.name ='Local TiTe 提特'and date(a.delivery_time) between date('2024-09-01') and date('2024-09-30')
+        where  1=1
+            and s.name ='LGF DuoJing 多镜'
+            and date(a.delivery_time) 
+        between date_sub(date_sub(date_format(now(),'%y-%m-%d'),interval extract(day from now())-1 day),interval 1 month) 
+              and date_sub(date_sub(date_format(now(),'%y-%m-%d'),interval extract(day from now()) day),interval 0 month)
         group by a.delivery_sn
     )
 )
@@ -599,81 +607,398 @@ from
     )
 )
 
-;
 
---  deyi 手工账单 核对依据之一
+
+-- lazada 计费卡账单核对 （包材另外核对）
+-- 业务单量和账单关系
 select 
-    s.name,
-    k.`billing_sn` ,
-    if( k.type=1,"仓储费","快递费") as type,
-    b.billing_name_zh,
-    a.business_sn,
-    a.from_order_sn,
-    a.business_date,
-    a.settlement_amount/100 账单计费金额,
-    a.number/1000000000 数量,
-    cc.name 包材名字,
-    ff.number 包材数量,
-    ff.billing_amount 包材计费金额
-from wms_production.billing  as k
-left join  wms_production.billing_detail as a  on k.`billing_sn`=a.charge_sn
-left join wms_production.billing_projects as b on b.id=a.billing_projects_id
-left join wms_production.seller s  on k.seller_id=s.id
+    s.name
+    ,be.type as 业务类型
+    ,be.count_id 系统业务量 
+    ,null 
+    ,bill.*
+    ,warehouse.charge
+    ,decode(bill.billing_name_zh,'仓储费',if(abs(bill.amount-warehouse.charge)<=1,0,bill.amount-warehouse.charge),0) check_w
+    ,bill.c_sn - be.count_id check_b
+from wms_production.seller  s 
+left join  
+(
+    select 
+        kk.seller_id 
+        ,kk.months
+        ,kk.type
+        ,count(kk.id) as count_id -- 件数
+    from 
+    (
+        select 
+            a.seller_id,
+            a.id ,
+            '入库费' as type,
+            date_format(complete_time,'%y#%m') as months
+        from wms_production.arrival_notice a 
+        where DATE(complete_time) between date('2024-10-01')  and date('2024-10-31')
+        union all
+        (
+            select 
+                seller_id,
+                id ,
+                '销退入库费'as type,
+                date_format(complete_time,'%y#%m') as months
+            from wms_production.delivery_rollback_order 
+            where date(complete_time) between date('2024-10-01')  and date('2024-10-31')
+        ) 
+        union all 
+        (
+            select 
+            do.seller_id,
+            do.id,
+            '操作费'as type,
+            date_format(do.delivery_time,'%y#%m')as months
+            from wms_production.delivery_order do
+            where date(delivery_time) between date('2024-10-01')  and date('2024-10-31')
+        )
+        union  all
+        (
+            select
+            rw.seller_id,
+            rw.id,
+            '出库费'as type,
+            date_format(out_warehouse_time,'%y#%m')as months
+            from wms_production.return_warehouse rw
+            where date(out_warehouse_time) between date('2024-10-01')  and date('2024-10-31') --  and type=1 -- 退供出库
+        )
+        union all
+        (
+            select
+            seller_id,
+            id,
+            '拦截费'as type,
+            date_format(shelf_on_end_time,'%y#%m')as months
+            from wms_production.intercept_place-- 拦截
+            where date(shelf_on_end_time) between date('2024-10-01')  and date('2024-10-31')
+        )
+        union all
+        (
+            select
+            ac.seller_id,
+            ac.id,
+            '贴码单'as type,
+            date_format(mark_time,'%y#%m')as months
+            from wms_production.affixed_code ac -- 贴码单
+            where date(mark_time) between date('2024-10-01')  and date('2024-10-31')
+        )
+        union all 
+        (
+            select 
+            do.seller_id,
+            do.id,
+            '包材费'as type,
+            date_format(do.delivery_time,'%y#%m')as months
+            from wms_production.delivery_order do
+            where date(delivery_time) between date('2024-10-01')  and date('2024-10-31')
+        )
+        union all  
+        (
+            select 
+            ba.seller_id,
+            ba.id ,
+            '报废单'as type,
+            date_format(ba.complete_time,'%y#%m') as months
+            from wms_production.destroy_order ba
+            where date(ba.complete_time) between date('2024-08-01') and date('2024-08-31'))
+        ) as kk
+    group by
+    kk.seller_id,
+    kk.months,
+    kk.type
+) as be    -- 收费业务单量
+on s.id=be.seller_id
 left join 
 (
     select 
-        b.container_sn
-        ,b.number
-        ,b.billing_amount/100 billing_amount
-    from wms_production.container_order as b
-    where date(b.check_time)  between '2024-09-01' and '2024-09-30' 
-) ff on a.business_sn=ff.container_sn
+        a.seller_id 
+        , sum(charge*volume *1.3) as charge
+    from 
+    (
+        select 
+            a.date
+            ,a.seller_id,
+            a.seller_goods_id 
+            ,a.in_days
+            ,sg.length/1000*sg.width/1000*sg.height /1000*a.inventory  as volume ,
+            case when a.in_days <=60 then 0
+            when a.in_days >60 and a.in_days <=120 then 2
+            when a.in_days >120 and a.in_days <=180 then 3
+            else 4
+            end charge 
+        from seller_goods_days_stock_snapshot  as a
+        left join wms_production.seller_goods sg on sg.id =a.seller_goods_id 
+        where a.date between  date('2024-10-01')  and date('2024-10-31') 
+        and (sg.`length`is not null and  sg.width is not null and sg.height is not null )
+    )
+    group by a.seller_id 
+) as warehouse -- lazada系列仓储费
+on s.id=warehouse.seller_id
+left join 
+(
+    select
+        month (a.business_date) as months
+        ,bill.business_audit_time
+        ,bill_name.billing_name,
+        a.seller_id ,
+        bill.billing_sn  as 账单号,
+        sum(settlement_amount/100) as amount,
+        sum(adjustment_amount/100) as  adjustment_amount,
+        count(a.business_sn) as c_sn,
+        case when b.billing_name_zh like '%增值%' then '贴码单' 
+            when b.billing_name_zh like '%出库%' then '出库费'
+            when b.billing_name_zh like '%入库单%' then '入库费'
+            when b.billing_name_zh like '%包材费%' then '包材费'
+            else b.billing_name_zh  end billing_name_zh,
+        bill.data_auditor_id
+        from wms_production.billing_detail as a 
+        left join wms_production.billing_projects as b on b.id=a.billing_projects_id
+        left join wms_production.billing as bill on bill.billing_sn=a.charge_sn
+        left join 
+        (
+            select 
+                b.seller_id 
+                ,a.billing_name
+            from warehouse_billing_rules as a 
+            left join warehouse_billing_rules_ref  as b on a.id=b.warehouse_billing_rules_id
+            where a.status =3  
+        ) as bill_name on a.seller_id=bill_name.seller_id
+        where business_date between  date('2024-10-01')  and date('2024-10-31')
+        and bill.status not in (0,50)
+        and settlement_amount>=0 
+        and bill.type=1 -- 仓储费
+    group by  b.billing_name_zh,month (a.business_date),a.seller_id,bill_name.billing_name,bill.data_auditor_id 
+) as bill on be.seller_id=bill.seller_id  and be.type=bill.billing_name_zh
+where billing_name  in ('Lazada客户','上海遥饮信息技术有限公司 （Lazada客户）','安德') and business_audit_time is not null and data_auditor_id=0
+
+
+-- 账单和业务单量关系
+select 
+    distinct 
+    s.name
+    ,be.type
+    ,be.count_id
+    ,null 
+    ,bill.*
+    ,warehouse.charge
+    ,decode(bill.billing_name_zh,'仓储费',if(abs(bill.amount-warehouse.charge)<=5,0,bill.amount-warehouse.charge),0) check_w
+    ,bill.c_sn -be.count_id check_b
+from  
+(
+    select
+        month (a.business_date) as months
+        ,bill.business_audit_time
+        ,bill_name.billing_name,
+        a.seller_id ,
+        bill.billing_sn  as 账单号,
+        sum(settlement_amount/100) as amount,
+        sum(adjustment_amount/100) as  adjustment_amount,
+        count(a.business_sn) as c_sn,
+        case when b.billing_name_zh like '%增值%' then '贴码单' 
+        when b.billing_name_zh like '%出库%' then '出库费'
+        when b.billing_name_zh like '%入库单%' then '入库费'
+        when b.billing_name_zh like '%包材费%' then '包材费'
+        else b.billing_name_zh  end billing_name_zh,
+        bill.data_auditor_id
+    from wms_production.billing_detail as a 
+    left join wms_production.billing_projects as b on b.id=a.billing_projects_id
+    left join wms_production.billing as bill on bill.billing_sn=a.charge_sn
+    left join 
+    ( 
+        select 
+            b.seller_id 
+            ,a.billing_name
+        from warehouse_billing_rules as a 
+        left join warehouse_billing_rules_ref  as b on a.id=b.warehouse_billing_rules_id
+        where a.status =3 
+    ) as bill_name -- and  a.billing_name in ('安德','上海遥饮信息技术有限公司 （Lazada客户）','Lazada客户'))
+    on a.seller_id=bill_name.seller_id
+    where business_date between  date('2024-10-01')  and date('2024-10-31')
+        and bill.status not in (0,50)
+ -- and settlement_amount>0 
+        and bill.type=1 -- 仓储费
+    group by  b.billing_name_zh,month (a.business_date),a.seller_id,bill_name.billing_name,bill.data_auditor_id 
+) as bill
+left join  
+(
+    select 
+        kk.seller_id 
+        ,kk.months
+        ,kk.type
+        ,count(kk.id) as count_id -- 件数
+    from 
+    (
+        select 
+            a.seller_id,
+            a.id ,
+            '入库费' as type,
+            date_format(complete_time,'%y#%m') as months
+        from wms_production.arrival_notice a 
+        where DATE(complete_time) between date('2024-10-01')  and date('2024-10-31')
+        union all
+        (
+            select 
+                seller_id,
+                id ,
+                '销退入库费'as type,
+                date_format(complete_time,'%y#%m') as months
+            from wms_production.delivery_rollback_order 
+            where date(complete_time) between date('2024-10-01')  and date('2024-10-31')
+        )
+        union all 
+        (
+            select 
+                do.seller_id,
+                do.id,
+                '操作费'as type,
+                date_format(do.delivery_time,'%y#%m')as months
+            from wms_production.delivery_order do
+            where date(delivery_time) between date('2024-10-01')  and date('2024-10-31')
+        )
+        union  all
+        (
+            select
+                rw.seller_id,
+                rw.id,
+                '出库费'as type,
+                date_format(out_warehouse_time,'%y#%m')as months
+            from wms_production.return_warehouse rw
+            where date(out_warehouse_time) between date('2024-10-01')  and date('2024-10-31') --  and type=1 -- 退供出库
+        )
+        union all
+        (
+            select
+                seller_id,
+                id,
+                '拦截费'as type,
+                date_format(shelf_on_end_time,'%y#%m')as months
+            from wms_production.intercept_place-- 拦截
+            where date(shelf_on_end_time) between date('2024-10-01')  and date('2024-10-31')
+        )
+        union all
+        (
+            select
+                ac.seller_id,
+                ac.id,
+                '贴码单'as type,
+                date_format(mark_time,'%y#%m')as months
+            from wms_production.affixed_code ac -- 贴码单
+            where date(mark_time) between date('2024-10-01')  and date('2024-10-31')
+        )
+        union all 
+        (
+            select
+                b.seller_id,
+                b.id,
+                '包材费'as type,
+                date_format(b.created,'%y#%m')as months 
+            from
+            wms_production.container_order as b 
+            where date(b.created) between date('2024-10-01')  and date('2024-10-31')
+        )
+        union all
+        (
+            select
+                ba.seller_id,
+                ba.id ,
+                '报废单'as type,
+                date_format(ba.complete_time,'%y#%m') as months
+            from wms_production.destroy_order ba
+            where date(ba.complete_time) between date('2024-08-01') and date('2024-08-31')
+        )
+    ) as kk
+    group by
+    kk.seller_id,
+    kk.months,
+    kk.type
+) as be    -- 收费业务单量
+on bill.seller_id=be.seller_id  and bill.billing_name_zh=be.type
 left join 
 (
     select 
-        b.container_sn
-        , GROUP_CONCAT(distinct f.name ,g.number separator '#' ) name
-    from wms_production.container_order as b
-    left join wms_production.container_inventory_log as g on g.container_order_id=b.id 
-    left join wms_production.container as f on f.id=g.container_id 
-    where date(b.check_time)  between '2024-09-01' and '2024-09-30'  
-    group by b.container_sn
-) cc on cc.container_sn=ff.container_sn
-where k.billing_start between '2024-09-01' and '2024-09-30' and   s.name like '秒发MIAOFA-%' -- and b.billing_name_zh='包材费'
- --  and k.status not in (0,50)
+        a.seller_id 
+        , sum(charge*volume *1.3) as charge
+    from 
+    (
+        select 
+            a.date
+            ,a.seller_id,
+            a.seller_goods_id 
+            ,a.in_days
+            ,sg.length/1000*sg.width/1000*sg.height /1000*a.inventory  as volume ,
+            case when a.in_days <=60 then 0
+                when a.in_days >60 and a.in_days <=120 then 2
+                when a.in_days >120 and a.in_days <=180 then 3
+                else 4 end charge 
+        from seller_goods_days_stock_snapshot  as a
+        left join wms_production.seller_goods sg  on sg.id =a.seller_goods_id 
+        where a.date between  date('2024-10-01')  and date('2024-10-31') 
+        and (sg.`length`is not null and  sg.width is not null and sg.height is not null )
+    )
+    group by a.seller_id 
+) as warehouse -- lazada系列仓储费
+on bill.seller_id=warehouse.seller_id
+left join wms_production.seller s on s.id=bill.seller_id
+where billing_name  in ('Lazada客户','上海遥饮信息技术有限公司 （Lazada客户）','安德') and business_audit_time is not null and data_auditor_id=0
 
--- 商品信息发生变更
 
-select * from 
-(select goods_name
-      ,bar_code
-      ,length
-  ,width
-  ,height
-  ,volume
-  from
-  seller_goods_location_ref_snapshot a
-  left join seller s on a.seller_id =s.id
-where a.date = date('2024-09-08')
-  and s.name ='星达曜曜-Simplus'
-  
-group by 1,2,3,4,5,6
-  ) t1
-join
-(select goods_name
-      ,bar_code
-      ,length
-  ,width
-  ,height
-  ,volume
-  from
-  seller_goods_location_ref_snapshot a
-  left join seller s on a.seller_id =s.id
-where a.date = date('2024-09-09')
-  and s.name ='星达曜曜-Simplus'
-group by 1,2,3,4,5,6
-  ) t2 on t1.bar_code = t2.bar_code
-where t1.width <> t2.width
-or t1.height <> t2.height
-or t1.length <> t2.length
-or t1.volume <> t2.volume;
+-- 操作费LZD 续约客户 
+select 
+    count(delivery_sn)
+    ,count(delivery_sn)/(TIMESTAMPDIFF(DAY,'2024-08-01','2024-08-31')+1) 日均单量,
+    case when count(delivery_sn)/(TIMESTAMPDIFF(DAY,'2024-08-01','2024-08-31')+1)<=200 then sum(price)
+        when count(delivery_sn)/(TIMESTAMPDIFF(DAY,'2024-08-01','2024-08-31')+1)<=500 then sum(price)-count(delivery_sn)*0.7
+        when count(delivery_sn)/(TIMESTAMPDIFF(DAY,'2024-08-01','2024-08-31')+1)>500 then sum(price)-count(delivery_sn)*1
+    else 0 end charge
+from 
+(
+    select
+        a.delivery_sn
+        ,sum(c.goods_number) num ,
+        case when sum(c.goods_number)<=3 then 2.5 
+            else 2.5+(sum(c.goods_number)-3)*0.3 end price 
+    from
+        wms_production.delivery_order as a
+    left join wms_production.delivery_order_goods as c on c.delivery_order_id = a.id
+    left join wms_production.seller_goods as g on c.seller_goods_id =g.id
+    left join `wms_production`.seller s on s.id=a.`seller_id` 
+    where 1=1
+    and s.name ='LGF 微米斯WeiMiSi'
+    and date(a.delivery_time) between date('2024-10-01') and date('2024-10-31')
+    group by a.delivery_sn
+);
+
+
+-- 仓储费LZD 续约客户  
+select 
+    name,-- date as mon,
+    sum(volume) as goods_volume,
+    sum(volume) *1.3*2 as charge
+from 
+(
+    select 
+        s.name
+        ,a.seller_goods_id 
+        ,l.location_code 
+        ,sg.name as goods_name,
+        a.total_inventory
+        ,a.date
+        ,sg.length/1000*sg.width/1000*sg.height /1000*a.total_inventory  as volume,
+        sg.length/1000
+        ,sg.width/1000
+        ,sg.height /100
+    from  seller_goods_location_ref_snapshot  as a
+    left join seller s on a.seller_id =s.id
+    left join location l on a.location_id=l.id        
+    left join seller_goods sg on sg.id =a.seller_goods_id 
+    where 1=1
+    and a.date between date('2024-10-01') and date('2024-10-31')
+    and s.name ='LGF LeMei乐美'
+    and (sg.`length`is not null and  sg.width is not null and sg.height is not null )
+)
+group by name-- ,date

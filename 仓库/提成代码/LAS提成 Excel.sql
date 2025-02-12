@@ -412,7 +412,7 @@ FROM
             CASE
                 when 职位类别 = 'Outbound' then 出库工作量
                 when 职位类别 = 'Inbound' then 入库工作量
-                when 职位类别 = 'Pickpacking' then 打包工作量
+                when 职位类别 = 'Pick' then 打包工作量
                 when 职位类别 = 'Back' then 销退工作量
                 else 0
             end 工作量,
@@ -426,7 +426,7 @@ FROM
             CASE
                 when 职位类别 = 'Outbound' then if((出库工作量 - 超额提成目标值) < 0, 0,(出库工作量 - 超额提成目标值) * 提成系数)
                 when 职位类别 = 'Inbound' then if((入库工作量 - 超额提成目标值) < 0, 0,(入库工作量 - 超额提成目标值) * 提成系数)
-                when 职位类别 = 'Pickpacking' then if((打包工作量 - 超额提成目标值) < 0, 0,(打包工作量 - 超额提成目标值) * 提成系数)
+                when 职位类别 = 'Pick' then if((打包工作量 - 超额提成目标值) < 0, 0,(打包工作量 - 超额提成目标值) * 提成系数)
                 when 职位类别 = 'Back' then if((销退工作量 - 超额提成目标值) < 0, 0,(销退工作量 - 超额提成目标值) * 提成系数)
                 else 0
             end 超额提成
@@ -470,9 +470,9 @@ CASE
                     END 入库工作量,
 CASE
                         when t.工作仓库 = '电商仓'
-                        and t.职位类别 = 'Pickpacking' then (菜鸟出库 * 1.2 + 打包单量)
+                        and t.职位类别 = 'Pick' then (菜鸟出库 * 1.2 + 打包单量)
                         when t.工作仓库 = '物料仓'
-                        and t.职位类别 = 'Pickpacking' then 物料仓打包量
+                        and t.职位类别 = 'Pick' then 物料仓打包量
                         else 0
                     END 打包工作量,
 CASE
